@@ -25,6 +25,18 @@ SHARP PC-E500 series.
 The goal of this project is to reconstruct the original driver from the
 magazine listing and preserved binaries, and document its internal structure.
 
+## Project goals
+
+The goal of this project is to create a complete archival reconstruction of
+the PLAY3 music driver.
+
+This includes:
+
+- Exact transcription of the magazine listing
+- XASM compatible assembly reconstruction
+- Binary generation
+- Verification against real machine RAM dumps
+
 ## Driver architecture
 
 PLAY3 is installed as a machine code extension to BASIC.
