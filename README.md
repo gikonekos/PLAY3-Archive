@@ -90,6 +90,10 @@ Included examples:
 These programs illustrate how music was composed for buzzer-based
 polyphonic drivers on pocket computers.
 
+Some example music programs originate from the 1990s,
+while others were newly created in 2025 to demonstrate
+the reconstructed PLAY3 driver.
+
 ---
 
 ## Authors
