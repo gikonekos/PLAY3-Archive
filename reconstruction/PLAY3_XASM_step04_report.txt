@@ -1,0 +1,69 @@
+PLAY3 / XASM step04 report
+========================
+
+Goal of this step
+-----------------
+Apply magazine-faithful fixes specifically to the photographed BEEP_OUT0 /
+BEEP_OUT3 core loop, then reassemble and measure how much closer the body
+length gets to the original PLAY3 binary.
+
+What was changed from step01
+----------------------------
+Using the user-supplied photos of listing lines 563-659, the output-loop core
+was revised to match the magazine more closely:
+
+- BEEP_OUT0 end condition restored to `dec x` / `jrnz loop` / `jp main2`.
+- BEEP_OUT3 main entry restored to `dec ba` / `jrnz skip1` instead of the previous zero-branch form.
+- All per-voice fall-through exits changed from long `jp bo3ex` to short `jr bo3ex`, matching the printed `jr exit` form.
+- The printed self-modifying labels were restored in name and patch target: `part1_co1`, `part2_co1`, `part2_co2`, `part3_co1` ... `part3_co4`.
+- The photographed loop logic was followed for `skip1`, `skip2`, `skip3`, `skip12`, and `skip13`.
+
+Assembler result
+----------------
+XASM 1.40 assembled the new source successfully.
+
+Original PLAY3 file size : 1376 bytes
+New object file size     : 1382 bytes
+Original body size       : 1360 bytes
+New body size            : 1366 bytes
+Body delta               : +6 bytes
+
+Improvement over step01
+-----------------------
+Step01 body size was 1371 bytes, i.e. +11 bytes versus the target 1360-byte body.
+Step04 body size is 1366 bytes, i.e. +6 bytes.
+So the photographed BEEP_OUT fixes reduced the size error by 5 bytes.
+
+First body differences
+----------------------
++0x0022  0xBF022  original=FA  new=E9
++0x0049  0xBF049  original=57  new=59
++0x004B  0xBF04B  original=2C  new=08
++0x004C  0xBF04C  original=05  new=00
++0x004D  0xBF04D  original=19  new=28
++0x004E  0xBF04E  original=F2  new=05
++0x004F  0xBF04F  original=0B  new=06
++0x0050  0xBF050  original=3C  new=F2
++0x0051  0xBF051  original=30  new=0B
++0x0052  0xBF052  original=E0  new=38
++0x0053  0xBF053  original=26  new=30
++0x0054  0xBF054  original=EC  new=E0
++0x0055  0xBF055  original=3F  new=26
++0x0056  0xBF056  original=07  new=EC
++0x0057  0xBF057  original=0D  new=3F
++0x0058  0xBF058  original=EE  new=07
+
+Interpretation
+--------------
+This is a meaningful improvement: the core sound loop was indeed one of the
+main size-drift sources. However, the binary still diverges from the original
+much earlier than the BEEP_OUT area, so the remaining +6 bytes are not the
+only remaining issue. The next likely candidates are earlier control-flow or
+addressing-form differences outside the photographed core loop.
+
+Produced files
+--------------
+- play3_xasm_step04_beepfix.asm
+- play3_xasm_step04_beepfix.obj
+- play3_xasm_step04_beepfix.lst
+- PLAY3_XASM_step04_report.txt

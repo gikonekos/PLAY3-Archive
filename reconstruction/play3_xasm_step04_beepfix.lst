@@ -1,0 +1,566 @@
+000000                   	        pre_on
+000000                   	fcs:    equ  0fffe4h
+000000                   	iocs:   equ  0fffe8h
+000000                   	vect0:  equ  0bfcc6h
+000000                   	vect1:  equ  0bfcc9h
+000000                   	vect2:  equ  0bfccch
+000000                   	vect3:  equ  0bfccfh
+000000                   	vect4:  equ  0bfcd2h
+000000                   	vect5:  equ  0bfcd5h
+000000                   	vect6:  equ  0bfcd8h
+000000                   	vect7:  equ  0bfcdbh
+000000                   	bx:     equ  0d4h
+000000                   	cs:     equ  0d5h
+000000                   	cx:     equ  0d6h
+000000                   	dx:     equ  0d8h
+000000                   	dh:     equ  0d9h
+000000                   	si:     equ  0dah
+000000                   	di:     equ  0ddh
+000000                   	abp:    equ  0ech
+000000                   	apx:    equ  0edh
+000000                   	apy:    equ  0eeh
+000000                   	iisr:   equ  0ebh
+000000                   	imr:    equ  0fbh
+000000                   	isr:    equ  0fch
+000000                   	beep:   equ  0fdh
+000000                   	basic_work: equ  0d1h
+000000                   	cr:     equ  00dh
+000000                   	part_c: equ  0
+000000                   	data_adr: equ  0
+000000                   	data_s_adr: equ  data_adr+3
+000000                   	oct:    equ  data_s_adr+3
+000000                   	onp:    equ  oct+1
+000000                   	l_count: equ  onp+1
+000000                   	o_count: equ  l_count+1
+000000                   	oct_flg:    equ  13h
+000000                   	octerve_adr: equ  30h
+000000                   	length_adr: equ  33h
+000000                   	e_flg:  equ  18h
+0BF000                   	        org  0bf000h
+0BF000                   	install: local
+0BF000 0C 26 F0 0B       	        mv   x,basic_command
+0BF004 30 BC 80 D1 90    	        mv   [(!basic_work)+90h],x
+0BF009 0C 35 F0 0B       	        mv   x,basic_code
+0BF00D 30 BC 80 D1 93    	        mv   [(!basic_work)+93h],x
+0BF012 07                	        retf
+0BF013 0C FF FF 0F       	remove: mv   x,0fffffh
+0BF017 30 BC 80 D1 90    	        mv   [(!basic_work)+90h],x
+0BF01C 30 BC 80 D1 93    	        mv   [(!basic_work)+93h],x
+0BF021 05 E9 F1 0B       	        callf !init1
+0BF025 07                	        retf
+0BF026 04                	basic_command: db  04h
+0BF027 50 4C 41 59       	        dm   'PLAY'
+0BF02B 1F                	        db   1fh
+0BF02C 05                	        db   5
+0BF02D 45 58 4F 46 46    	        dm   'EXOFF'
+0BF032 02                	        db   2
+0BF033 00 00             	        db   0,0
+0BF035 1F                	basic_code: db  1fh
+0BF036 3F F0             	        dw   !entry
+0BF038 8B                	        db   8bh
+0BF039 02                	        db   2
+0BF03A 13 F0             	        dw   remove
+0BF03C 8B                	        db   8bh
+0BF03D 00 00             	        db   0,0
+0BF03F                   	        endl
+0BF03F                   	entry:  local
+0BF03F 2F                	        pushu imr
+0BF040 30 CC FB A0       	        mv   (!imr),0a0h
+0BF044 30 E8 36 EC       	        mv   [--u],(!abp)
+0BF048 04 59 F0          	        call mml_conv
+0BF04B 08 00             	        mv   a,0
+0BF04D 28                	        pushu a
+0BF04E 05 06 F2 0B       	        callf !init2
+0BF052 38                	        popu   a
+0BF053 30 E0 26 EC       	        mv   (!abp),[u++]
+0BF057 3F                	        popu imr
+0BF058 07                	        retf
+0BF059 0D DF F1 0B       	mml_conv: mv   y,octerve
+0BF05D 30 A5 30          	        mv   (!octerve_adr),y
+0BF060 0D E0 F1 0B       	        mv   y,length
+0BF064 30 A5 33          	        mv   (!length_adr),y
+0BF067 30 9D 80 24 03    	        mv   y,[(!part1)+3]
+0BF06C AD E5 F1 0B       	        mv   [MML_data_adr],y
+0BF070 0D DE F1 0B       	        mv   y,not_data
+0BF074 30 BD 80 44 03    	        mv   [(!part3)+3],y
+0BF079 30 BD 80 34 03    	        mv   [(!part2)+3],y
+0BF07E 30 CC 13 0F       	        mv   (!oct_flg),0fh
+0BF082 90 24             	        mv   a,[x++]
+0BF084 60 22             	        cmp  a,'"'
+0BF086 18 8F             	        jrz  mml_conv_exit
+0BF088 60 22             	        cmp  a,'"'
+0BF08A 18 00             	        jrz  mml_conv_lp
+0BF08C 90 24             	mml_conv_lp: mv  a,[x++]
+0BF08E 60 22             	        cmp  a,'"'
+0BF090 18 85             	        jrz  mml_conv_exit
+0BF092 18 81             	        jrz  mml_conv_exit_c
+0BF094 60 3A             	        cmp  a,':'
+0BF096 18 A6             	        jrz  part_ch
+0BF098 60 3E             	        cmp  a,'>'
+0BF09A 14 B9 F1          	        jpz  oct_up
+0BF09D 60 3C             	        cmp  a,'<'
+0BF09F 14 C8 F1          	        jpz  oct_dw
+0BF0A2 60 4F             	        cmp  a,'O'
+0BF0A4 14 9E F1          	        jpz  oct_ch
+0BF0A7 60 54             	        cmp  a,'T'
+0BF0A9 14 79 F1          	        jpz  temp2_ch
+0BF0AC 60 4C             	        cmp  a,'L'
+0BF0AE 18 6C             	        jrz  len_ch
+0BF0B0 60 52             	        cmp  a,'R'
+0BF0B2 18 5D             	        jrz  kyuufu
+0BF0B4 60 2B             	        cmp  a,'+'
+0BF0B6 14 B9 F1          	        jpz  oct_up
+0BF0B9 60 2D             	        cmp  a,'-'
+0BF0BB 14 C8 F1          	        jpz  oct_dw
+0BF0BE 60 49             	        cmp  a,'I'
+0BF0C0 18 70             	        jrz  format_ch
+0BF0C2 0D D0 F1 0B       	onp_set: mv  y,mml_data1
+0BF0C6 60 23             	        cmp  a,'#'
+0BF0C8 18 04             	        jrz  onp_skip
+0BF0CA 0D D7 F1 0B       	        mv   y,mml_data2
+0BF0CE 48 41             	onp_skip: sub  a,'A'
+0BF0D0 60 07             	        cmp  a,7
+0BF0D2 1C 3A             	        jrc  onp_skip2
+0BF0D4 90 05             	        mv   a,[y]
+0BF0D6 FD 10             	        mv   il,a
+0BF0D8 3D                	        popu y
+0BF0D9 48 30             	onp_len: sub  a,'0'
+0BF0DB 1C 12             	        jrc  onp_len_sk2
+0BF0DD 1E 0A             	        jrnc  onp_len_sk
+0BF0DF 48 25             	        sub  a,'U'-'0'
+0BF0E1 60 06             	        cmp  a,6
+0BF0E3 1C 04             	        jrc  onp_len_sk
+0BF0E5 40 0A             	        add  a,10
+0BF0E7 12 06             	        jr   onp_len_sk2
+0BF0E9 30 98 00 33       	onp_len_sk: mv  a,[(!length_adr)]
+0BF0ED 7C 04             	        dec  x
+0BF0EF 28                	onp_len_sk2: pushu a
+0BF0F0 88 E8 F1 0B       	        mv   a,[format_data]
+0BF0F4 60 00             	        cmp  a,0
+0BF0F6 38                	        popu a
+0BF0F7 18 04             	        jrz  onp_len_sk3
+0BF0F9 30 B8 00 33       	        mv   [(!length_adr)],a
+0BF0FD 46 01             	onp_len_sk3: add  a,il
+0BF0FF 30 61 13 10       	        cmp  (!oct_flg),010h
+0BF103 1D 79             	        jrc  mml_conv_lp
+0BF105 30 80 13          	        mv   a,(!oct_flg)
+0BF108 30 CC 13 FF       	        mv   (!oct_flg),0ffh
+0BF10C 12 94             	        jr   oct_ch_s
+0BF10E 3D                	onp_skip2: popu y
+0BF10F 13 85             	        jr   mml_conv_lp
+0BF111 09 00             	kyuufu: mv   il,0
+0BF113 13 3C             	        jr   onp_len
+0BF115 7C 04             	mml_conv_exit_c: dec  x
+0BF117 90 05             	mml_conv_exit: mv   a,[y]
+0BF119 B0 25             	        mv   [y++],a
+0BF11B 06                	        ret
+0BF11C 90 04             	len_ch: mv   a,[x]
+0BF11E 48 30             	        sub  a,'0'
+0BF120 60 0A             	        cmp  a,0ah
+0BF122 1C 08             	        jrc  len_sk
+0BF124 48 55             	        sub  a,'U'
+0BF126 60 06             	        cmp  a,6
+0BF128 1D 9E             	        jrc  mml_conv_lp
+0BF12A 40 0A             	        add  a,10
+0BF12C 30 B8 00 33       	len_sk: mv   [(!length_adr)],a
+0BF130 13 A6             	        jr   mml_conv_lp
+0BF132 90 04             	format_ch: mv  a,[x]
+0BF134 48 30             	        sub  a,'0'
+0BF136 A8 E8 F1 0B       	        mv   [format_data],a
+0BF13A 6C 04             	format_sk: inc  x
+0BF13C 13 B2             	        jr   mml_conv_lp
+0BF13E 2C                	part_ch: pushu x
+0BF13F 08 FF             	        mv   a,0ffh
+0BF141 B0 25             	        mv   [y++],a
+0BF143 8C E5 F1 0B       	        mv   x,[MML_data_adr]
+0BF147 45 42             	        add  x,ba
+0BF149 45 42             	        add  x,ba
+0BF14B AC E5 F1 0B       	        mv   [MML_data_adr],x
+0BF14F FD 54             	        mv   y,x
+0BF151 30 9C 00 30       	        mv   x,[(!octerve_adr)]
+0BF155 6C 04             	        inc  x
+0BF157 6C 04             	        inc  x
+0BF159 30 A4 30          	        mv   (!octerve_adr),x
+0BF15C 30 9C 00 33       	        mv   x,[(!length_adr)]
+0BF160 6C 04             	        inc  x
+0BF162 6C 04             	        inc  x
+0BF164 30 A4 33          	        mv   (!length_adr),x
+0BF167 13 DD             	        jr   mml_conv_lp
+0BF169 90 04             	temp_ch: mv   a,[x]
+0BF16B 48 30             	        sub  a,'0'
+0BF16D 60 0A             	        cmp  a,0ah
+0BF16F 1D E5             	        jrc  mml_conv_lp
+0BF171 40 19             	        add  a,!temp
+0BF173 B0 25             	        mv   [y++],a
+0BF175 6C 04             	        inc  x
+0BF177 13 ED             	        jr   mml_conv_lp
+0BF179 09 00             	temp2_ch: mv   il,0
+0BF17B 08 DF             	        mv   a,0dfh
+0BF17D B0 25             	        mv   [y++],a
+0BF17F 90 04             	temp2_lp1: mv  a,[x]
+0BF181 48 30             	        sub  a,30h
+0BF183 60 0A             	        cmp  a,10
+0BF185 1C 12             	        jrc  temp2_sk1
+0BF187 28                	        pushu a
+0BF188 FD 01             	        mv   a,il
+0BF18A 46 00             	        add  a,a
+0BF18C 46 00             	        add  a,a
+0BF18E 46 10             	        add  il,a
+0BF190 46 11             	        add  il,il
+0BF192 38                	        popu a
+0BF193 46 10             	        add  il,a
+0BF195 6C 04             	        inc  x
+0BF197 13 1A             	        jr   temp2_lp1
+0BF199 B1 25             	temp2_sk1: mv  [y++],il
+0BF19B 02 8C F0          	        jp   mml_conv_lp
+0BF19E 90 04             	oct_ch:  mv   a,[x]
+0BF1A0 48 30             	        sub  a,30h
+0BF1A2 60 0A             	oct_ch_s: cmp  a,10
+0BF1A4 17 8C F0          	        jpnc mml_conv_lp
+0BF1A7 30 B8 00 30       	        mv   [(!octerve_adr)],a
+0BF1AB 40 E0             	        add  a,0e0h
+0BF1AD B0 25             	        mv   [y++],a
+0BF1AF 02 8C F0          	        jp   mml_conv_lp
+0BF1B2 30 98 00 30       	oct_flg_up: mv  a,[(!octerve_adr)]
+0BF1B6 30 A0 13          	        mv   (!oct_flg),a
+0BF1B9 30 98 00 30       	oct_up:  mv   a,[(!octerve_adr)]
+0BF1BD 6C 00             	        inc  a
+0BF1BF 13 1F             	        jr   oct_ch_s
+0BF1C1 30 98 00 30       	oct_flg_dw: mv  a,[(!octerve_adr)]
+0BF1C5 30 A0 13          	        mv   (!oct_flg),a
+0BF1C8 30 98 00 30       	oct_dw:  mv   a,[(!octerve_adr)]
+0BF1CC 7C 00             	        dec  a
+0BF1CE 13 2E             	        jr   oct_ch_s
+0BF1D0 A0                	mml_data1: db  0a0h
+0BF1D1 C0                	        db   0c0h
+0BF1D2 10                	        db   010h
+0BF1D3 30                	        db   030h
+0BF1D4 50                	        db   050h
+0BF1D5 60                	        db   060h
+0BF1D6 80                	        db   080h
+0BF1D7 B0                	mml_data2: db  0b0h
+0BF1D8 10                	        db   010h
+0BF1D9 20                	        db   020h
+0BF1DA 40                	        db   040h
+0BF1DB 50                	        db   050h
+0BF1DC 70                	        db   070h
+0BF1DD 90                	        db   090h
+0BF1DE FF                	not_data:  db  0ffh
+0BF1DF 03                	octerve:   db  3
+0BF1E0 06                	length:    db  6
+0BF1E1 03                	octerve2:  db  3
+0BF1E2 05                	length2:   db  5
+0BF1E3 03                	octerve3:  db  3
+0BF1E4 05                	length3:   db  5
+0BF1E5 00 00 00          	MML_data_adr: ds  3
+0BF1E8 01                	format_data: db  1
+0BF1E9                   	        endl
+0BF1E9 0D 00 00 00       	init1:  mv   y,0
+0BF1ED AD 2D F5 0B       	        mv   [part1+o_count],y
+0BF1F1 AD 3D F5 0B       	        mv   [part2+o_count],y
+0BF1F5 AD 4D F5 0B       	        mv   [part3+o_count],y
+0BF1F9 A8 2A F5 0B       	        mv   [part1+oct],a
+0BF1FD A8 3A F5 0B       	        mv   [part2+oct],a
+0BF201 A8 4A F5 0B       	        mv   [part3+oct],a
+0BF205 07                	        retf
+0BF206 0B 00 00          	init2:  mv   i,0
+0BF209 AB 2B F5 0B       	        mv   [part1+onp],i
+0BF20D AB 3B F5 0B       	        mv   [part2+onp],i
+0BF211 AB 4B F5 0B       	        mv   [part3+onp],i
+0BF215 30 9D 80 24 03    	        mv   y,[(!part1)+3]
+0BF21A AD 24 F5 0B       	        mv   [part1+data_adr],y
+0BF21E 30 9D 80 34 03    	        mv   y,[(!part2)+3]
+0BF223 AD 34 F5 0B       	        mv   [part2+data_adr],y
+0BF227 30 9D 80 44 03    	        mv   y,[(!part3)+3]
+0BF22C AD 44 F5 0B       	        mv   [part3+data_adr],y
+0BF230 0C 24 F5 0B       	main2:  mv   x,part1
+0BF234 04 58 F3          	        call mml
+0BF237 0C 34 F5 0B       	        mv   x,part2
+0BF23B 04 58 F3          	        call mml
+0BF23E 0C 44 F5 0B       	        mv   x,part3
+0BF242 04 58 F3          	        call mml
+0BF245 08 00             	        mv   a,0
+0BF247 75                	        mv   b,a
+0BF248 88 2C F5 0B       	        mv   a,[part1+l_count]
+0BF24C 30 D0 00 3C F5 0B 	        mv   (part_c),[part2+l_count]
+0BF252 30 61 00 00       	        cmp  (part_c),0
+0BF256 18 08             	        jrz  main2_skip1
+0BF258 30 63 00          	        cmp  (part_c),a
+0BF25B 1C 03             	        jrc  main2_skip1
+0BF25D 30 80 00          	        mv   a,(part_c)
+0BF260 30 D0 00 4C F5 0B 	main2_skip1: mv  (part_c),[part3+l_count]
+0BF266 30 61 00 00       	        cmp  (part_c),0
+0BF26A 18 08             	        jrz  main2_skip2
+0BF26C 30 63 00          	        cmp  (part_c),a
+0BF26F 1C 03             	        jrc  main2_skip2
+0BF271 30 80 00          	        mv   a,(part_c)
+0BF274 60 00             	main2_skip2: cmp  a,0
+0BF276 14 57 F3          	        jpz  exit
+0BF279 FD 10             	        mv   il,a
+0BF27B 88 2C F5 0B       	        mv   a,[part1+l_count]
+0BF27F 4E 01             	        sub  a,il
+0BF281 A8 2C F5 0B       	        mv   [part1+l_count],a
+0BF285 88 3C F5 0B       	        mv   a,[part2+l_count]
+0BF289 4E 01             	        sub  a,il
+0BF28B A8 3C F5 0B       	        mv   [part2+l_count],a
+0BF28F 88 4C F5 0B       	        mv   a,[part3+l_count]
+0BF293 4E 01             	        sub  a,il
+0BF295 A8 4C F5 0B       	        mv   [part3+l_count],a
+0BF299 44 33             	        add  i,i
+0BF29B 88 19 F5 0B       	        mv   a,[temp]
+0BF29F 0C 00 00 00       	        mv   x,0
+0BF2A3 44 33             	main2_lp1: add  i,i
+0BF2A5 9F                	        rc
+0BF2A6 F4                	        shr  a
+0BF2A7 1E 02             	        jrnc main2_skip
+0BF2A9 45 43             	        add  x,i
+0BF2AB 60 00             	main2_skip: cmp  a,0
+0BF2AD 19 0C             	        jrz  main2_lp1
+0BF2AF AC 1A F5 0B       	        mv   [count],x
+0BF2B3 30 CC 00 00       	        mv   (part_c),0
+0BF2B7 0D 1D F5 0B       	        mv   y,count1
+0BF2BB 88 2B F5 0B       	        mv   a,[part1+onp]
+0BF2BF 6C 00             	        inc  a
+0BF2C1 18 0D             	        jrz  p1_skip
+0BF2C3 7C 00             	        dec  a
+0BF2C5 18 09             	        jrz  p1_skip
+0BF2C7 8A 2D F5 0B       	        mv   ba,[part1+o_count]
+0BF2CB B2 25             	        mv   [y++],ba
+0BF2CD 30 6D 00          	        inc  (part_c)
+0BF2D0 88 3B F5 0B       	p1_skip: mv  a,[part2+onp]
+0BF2D4 6C 00             	        inc  a
+0BF2D6 18 0D             	        jrz  p2_skip
+0BF2D8 7C 00             	        dec  a
+0BF2DA 18 09             	        jrz  p2_skip
+0BF2DC 8A 3D F5 0B       	        mv   ba,[part2+o_count]
+0BF2E0 B2 25             	        mv   [y++],ba
+0BF2E2 30 6D 00          	        inc  (part_c)
+0BF2E5 88 4B F5 0B       	p2_skip: mv  a,[part3+onp]
+0BF2E9 6C 00             	        inc  a
+0BF2EB 18 0D             	        jrz  p3_skip
+0BF2ED 7C 00             	        dec  a
+0BF2EF 18 09             	        jrz  p3_skip
+0BF2F1 8A 4D F5 0B       	        mv   ba,[part3+o_count]
+0BF2F5 FD 22             	        mv   ba,ba
+0BF2F7 30 6D 00          	        inc  (part_c)
+0BF2FA 8C 1A F5 0B       	p3_skip: mv  x,[count]
+0BF2FE 8A 1D F5 0B       	        mv   ba,[count1]
+0BF302 FD 32             	        mv   i,ba
+0BF304 FD 53             	        mv   y,i
+0BF306 AA 02 F4 0B       	        mv   [part1_co1+1],ba
+0BF30A AB 4D F4 0B       	        mv   [part2_co2+1],i
+0BF30E AB 0D F4 0B       	        mv   [part2_co1+1],i
+0BF312 AD 14 F4 0B       	        mv   [part3_co1+1],y
+0BF316 AD 35 F4 0B       	        mv   [part3_co2+1],y
+0BF31A AD 54 F4 0B       	        mv   [part3_co3+1],y
+0BF31E AD 68 F4 0B       	        mv   [part3_co4+1],y
+0BF322 30 7D 00          	        dec  (part_c)
+0BF325 14 E1 F3          	        jpz  beep_out3
+0BF328 8B 1F F5 0B       	        mv   i,[count2]
+0BF32C AB 0D F4 0B       	        mv   [part2_co1+1],i
+0BF330 AB 4D F4 0B       	        mv   [part2_co2+1],i
+0BF334 7C 03             	        dec  i
+0BF336 7C 03             	        dec  i
+0BF338 7C 03             	        dec  i
+0BF33A 30 7D 00          	        dec  (part_c)
+0BF33D 14 E1 F3          	        jpz  beep_out3
+0BF340 8A 21 F5 0B       	        mv   ba,[count3]
+0BF344 AA 02 F4 0B       	        mv   [part1_co1+1],ba
+0BF348 7C 02             	        dec  ba
+0BF34A 7C 02             	        dec  ba
+0BF34C 7C 02             	        dec  ba
+0BF34E 30 7D 00          	        dec  (part_c)
+0BF351 14 E1 F3          	        jpz  beep_out3
+0BF354 02 CC F3          	        jp   beep_out0
+0BF357 07                	exit:  retf
+0BF358                   	ret:
+0BF358 2D                	mml:   pushu y
+0BF359 90 84 07          	        mv   a,[x+onp]
+0BF35C 60 FF             	        cmp  a,0ffh
+0BF35E 18 26             	        jrz  mml_exit
+0BF360 90 84 08          	        mv   a,[x+l_count]
+0BF363 60 00             	        cmp  a,0
+0BF365 18 2A             	        jrz  skip_exit
+0BF367 95 04             	        mv   y,[x]
+0BF369 90 25             	mml_loop: mv  a,[y++]
+0BF36B 60 FF             	        cmp  a,0ffh
+0BF36D 18 17             	        jrz  mml_exit
+0BF36F 60 DF             	        cmp  a,0dfh
+0BF371 18 0B             	        jrz  temp_ch
+0BF373 60 E0             	        cmp  a,0e0h
+0BF375 1C 20             	        jrc  mml_onp
+0BF377 70 0F             	oct_ch: and  a,0fh
+0BF379 B0 84 06          	        mv   [x+oct],a
+0BF37C 13 15             	        jr   mml_loop
+0BF37E 90 25             	temp_ch: mv  a,[y++]
+0BF380 A8 19 F5 0B       	        mv   [temp],a
+0BF384 13 1D             	        jr   mml_loop
+0BF386 B0 84 07          	mml_exit: mv  [x+onp],a
+0BF389 08 00             	        mv   a,0
+0BF38B B0 84 08          	        mv   [x+l_count],a
+0BF38E 3D                	        popu y
+0BF38F 97                	        sc
+0BF390 06                	        ret
+0BF391 93 84 09          	skip_exit: mv  i,[x+o_count]
+0BF394 3D                	        popu y
+0BF395 9F                	        rc
+0BF396 06                	        ret
+0BF397 B5 04             	mml_onp: mv  [x],y
+0BF399 28                	        pushu a
+0BF39A 70 F0             	        and  a,0f0h
+0BF39C E4                	        ror  a
+0BF39D E4                	        ror  a
+0BF39E FD 10             	        mv   il,a
+0BF3A0 E4                	        ror  a
+0BF3A1 E4                	        ror  a
+0BF3A2 B0 84 07          	        mv   [x+onp],a
+0BF3A5 46 01             	        add  a,il
+0BF3A7 46 00             	        add  a,a
+0BF3A9 0D 87 F4 0B       	        mv   y,mml_data
+0BF3AD 45 50             	        add  y,a
+0BF3AF 90 84 06          	        mv   a,[x+oct]
+0BF3B2 46 00             	        add  a,a
+0BF3B4 45 50             	        add  y,a
+0BF3B6 91 05             	        mv   il,[y]
+0BF3B8 B3 84 09          	        mv   [x+o_count],i
+0BF3BB 38                	        popu a
+0BF3BC 70 0F             	        and  a,0fh
+0BF3BE 0D 09 F5 0B       	        mv   y,length_data
+0BF3C2 45 50             	        add  y,a
+0BF3C4 90 05             	        mv   a,[y]
+0BF3C6 B0 84 08          	        mv   [x+l_count],a
+0BF3C9 3D                	        popu y
+0BF3CA 9F                	        rc
+0BF3CB 06                	        ret
+0BF3CC                   	beep_out0:
+0BF3CC 0B 04 00          	bo0lp:  mv   i,4
+0BF3CF 7C 03             	bo0l1:  dec  i
+0BF3D1 1B 04             	        jrnz bo0l1
+0BF3D3 30 CC FD 02       	        mv   (!beep),2h
+0BF3D7 00                	        nop
+0BF3D8 00                	        nop
+0BF3D9 00                	        nop
+0BF3DA 7C 04             	b_ent:  dec  x
+0BF3DC 1B 12             	        jrnz bo0lp
+0BF3DE 02 30 F2          	        jp   main2
+0BF3E1                   	beep_out3:
+0BF3E1 AA 02 F4 0B       	        mv   [part1_co1+1],ba
+0BF3E5 AB 0D F4 0B       	        mv   [part2_co1+1],i
+0BF3E9 AB 4D F4 0B       	        mv   [part2_co2+1],i
+0BF3ED AD 14 F4 0B       	        mv   [part3_co1+1],y
+0BF3F1 AD 35 F4 0B       	        mv   [part3_co2+1],y
+0BF3F5 AD 54 F4 0B       	        mv   [part3_co3+1],y
+0BF3F9 AD 68 F4 0B       	        mv   [part3_co4+1],y
+0BF3FD 7C 02             	bo3lp:  dec  ba
+0BF3FF 1A 41             	        jrnz sk1
+0BF401 0A 00 00          	part1_co1: mv ba,0
+0BF404 30 CC FD 02       	        mv   (!beep),2h
+0BF408 7C 03             	        dec  i
+0BF40A 1A 22             	        jrnz sk2
+0BF40C 0B 00 00          	part2_co1: mv i,0
+0BF40F 7C 05             	        dec  y
+0BF411 1A 0E             	        jrnz sk3
+0BF413 0D 00 00 00       	part3_co1: mv y,0
+0BF417 30 CC FD 12       	        mv   (!beep),12h
+0BF41B 7C 04             	        dec  x
+0BF41D 1B 22             	        jrnz bo3lp
+0BF41F 12 5F             	        jr   bo3ex
+0BF421 00                	sk3:    nop
+0BF422 00                	        nop
+0BF423 00                	        nop
+0BF424 30 CC FD 12       	        mv   (!beep),12h
+0BF428 7C 04             	        dec  x
+0BF42A 1B 2F             	        jrnz bo3lp
+0BF42C 12 52             	        jr   bo3ex
+0BF42E 00                	sk2:    nop
+0BF42F 00                	        nop
+0BF430 7C 05             	        dec  y
+0BF432 1B 13             	        jrnz sk3
+0BF434 0D 00 00 00       	part3_co2: mv y,0
+0BF438 30 CC FD 12       	        mv   (!beep),12h
+0BF43C 7C 04             	        dec  x
+0BF43E 1B 43             	        jrnz bo3lp
+0BF440 12 3E             	        jr   bo3ex
+0BF442 00                	sk1:    nop
+0BF443 00                	        nop
+0BF444 30 CC FD 02       	        mv   (!beep),2h
+0BF448 7C 03             	        dec  i
+0BF44A 1A 15             	        jrnz sk12
+0BF44C 0B 00 00          	part2_co2: mv i,0
+0BF44F 7C 05             	        dec  y
+0BF451 1B 32             	        jrnz sk3
+0BF453 0D 00 00 00       	part3_co3: mv y,0
+0BF457 30 CC FD 12       	        mv   (!beep),12h
+0BF45B 7C 04             	        dec  x
+0BF45D 1B 62             	        jrnz bo3lp
+0BF45F 12 1F             	        jr   bo3ex
+0BF461 00                	sk12:   nop
+0BF462 00                	        nop
+0BF463 7C 05             	        dec  y
+0BF465 1A 0E             	        jrnz sk13
+0BF467 0D 00 00 00       	part3_co4: mv y,0
+0BF46B 30 CC FD 12       	        mv   (!beep),12h
+0BF46F 7C 04             	        dec  x
+0BF471 1B 76             	        jrnz bo3lp
+0BF473 12 0B             	        jr   bo3ex
+0BF475 00                	sk13:   nop
+0BF476 00                	        nop
+0BF477 00                	        nop
+0BF478 00                	        nop
+0BF479 00                	        nop
+0BF47A 00                	        nop
+0BF47B 00                	        nop
+0BF47C 7C 04             	        dec  x
+0BF47E 1B 83             	        jrnz bo3lp
+0BF480 30 CC FD 02       	bo3ex:  mv   (!beep),2h
+0BF484 02 30 F2          	        jp   main2
+0BF487                   	mml_data:
+0BF487 00 00 00 00 00 00 	        dw   000h, 000h, 000h, 000h, 000h
+0BF48D 00 00 00 00       	
+0BF491 97 00 4C 00 26 00 	        dw   12Eh, 097h, 04Ch, 026h, 013h
+0BF497 26 13 13 00       	
+0BF49B 8F 00 48 00 24 00 	        dw   11Dh, 08Fh, 048h, 024h, 012h
+0BF4A1 24 12 12 00       	
+0BF4A5 87 00 44 00 22 00 	        dw   10Dh, 087h, 044h, 022h, 011h
+0BF4AB 22 11 11 00       	
+0BF4AF 7F 00 40 00 20 00 	        dw   0FEh, 07Fh, 040h, 020h, 010h
+0BF4B5 20 10 10 00       	
+0BF4B9 78 00 3C 00 1E 00 	        dw   0F0h, 078h, 03Ch, 01Eh, 00Fh
+0BF4BF 1E 0F 0F 00       	
+0BF4C3 71 00 39 00 1D 00 	        dw   0E2h, 071h, 039h, 01Dh, 00Fh
+0BF4C9 1D 0F 0F 00       	
+0BF4CD 6B 00 36 00 1B 00 	        dw   0D6h, 06Bh, 036h, 01Bh, 00Eh
+0BF4D3 1B 0E 0E 00       	
+0BF4D7 65 00 33 00 1A 00 	        dw   0CAh, 065h, 033h, 01Ah, 00Dh
+0BF4DD 1A 0D 0D 00       	
+0BF4E1 5F 00 30 00 18 00 	        dw   0BEh, 05Fh, 030h, 018h, 00Ch
+0BF4E7 18 0C 0C 00       	
+0BF4EB 5A 00 2D 00 17 00 	        dw   0B4h, 05Ah, 02Dh, 017h, 00Ch
+0BF4F1 17 0C 0C 00       	
+0BF4F5 55 00 2B 00 16 00 	        dw   0AAh, 055h, 02Bh, 016h, 00Bh
+0BF4FB 16 0B 0B 00       	
+0BF4FF 50 00 28 00 14 00 	        dw   0A0h, 050h, 028h, 014h, 00Ah
+0BF505 14 0A 0A 00       	
+0BF509 03 06 09 0C       	length_data: db  003h, 006h, 009h, 00Ch
+0BF50D 12 18 24 30       	        db   012h, 018h, 024h, 030h
+0BF511 48 60 02 04       	        db   048h, 060h, 002h, 004h
+0BF515 06 10 20 01       	        db   006h, 010h, 020h, 001h
+0BF519 01                	temp:   db   1
+0BF51A 00 00 00          	count:  db   0,0,0
+0BF51D 00 00             	count1: db   0,0
+0BF51F 00 00             	count2: db   0,0
+0BF521 00 00 00          	count3: db   0,0,0
+0BF524 00 00 00 00 00 00 	part1:  ds   16
+0BF52A 00 00 00 00 00 00 	
+0BF530 00 00 00 00       	
+0BF534 00 00 00 00 00 00 	part2:  ds   16
+0BF53A 00 00 00 00 00 00 	
+0BF540 00 00 00 00       	
+0BF544 00 00 00 00 00 00 	part3:  ds   16
+0BF54A 00 00 00 00 00 00 	
+0BF550 00 00 00 00       	
+0BF554 00                	r_flg:  ds   1
+0BF555 00                	data_buff: ds  1
+0BF556                   	        end
+
+  No fatal error.  Code: 0BF000h - 0BF555h [     1366 byte(s)]
