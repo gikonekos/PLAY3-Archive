@@ -1,0 +1,101 @@
+PLAY3 / XASM progress report v2
+===============================
+
+Status summary
+--------------
+A substantial cleanup step succeeded.
+The current best file is now:
+
+- play3_xasm_candidate2.asm
+
+Compared with the previous candidate, the XASM error count was reduced from
+many dozens to only 5 blocking locations.
+
+What changed in this pass
+-------------------------
+1. Restored outer-scope references inside LOCAL blocks using `!` where needed.
+   Examples:
+   - [(!basic_work)+90h]
+   - [(!basic_work)+93h]
+   - callf !init1
+   - dw !entry
+   - callf !init2
+   - (!imr), (!abp), etc.
+
+2. Restored hierarchical local-label references for the 3-voice output routine.
+   Examples:
+   - [beep_out3!part1_co1+1]
+   - [beep_out3!part2_co2+1]
+   - [beep_out3!part3_co4+1]
+
+3. Fixed several indirect-pointer accesses that were using internal-RAM syntax
+   instead of memory-through-pointer syntax.
+   Examples:
+   - [(!MML_data_adr)]
+   - [(!length_adr)]
+   - [(!octerve_adr)]
+
+4. Fixed several clearly too-short jumps to long form.
+   Examples:
+   - jrz -> jpz
+   - jr  -> jp
+
+Result of this pass
+-------------------
+Assembler: XASM 1.40 (rebuilt in this environment)
+Input:     play3_xasm_candidate2.asm
+Result:    assembly gets much further, but still stops on 5 unresolved lines.
+
+Remaining blocking lines in candidate2
+--------------------------------------
+- line 207 : Undefined instruction
+- line 240 : Undefined instruction
+- line 244 : Undefined instruction
+- line 372 : Undefined instruction
+- line 392 : Undefined instruction
+
+Interpretation of the remaining 5 blockers
+------------------------------------------
+1. line 207
+   The `temp_ch` area still contains one ambiguous arithmetic form.
+   This is likely an OCR/reconstruction issue around how the tempo byte is adjusted.
+
+2. lines 240 and 244
+   These are in the octave-flag update path.
+   The source currently uses a memory-to-memory style form:
+   - oct_flg_up
+   - oct_flg_dw
+   XASM likely requires this to be split via register A.
+
+3. lines 372 and 392
+   These are in the 3-voice setup section that patches immediate values inside
+   the `beep_out3` local block.
+   The restored label names now resolve correctly, so the remaining issue is
+   no longer label scope; it is the operand form itself.
+   Most likely possibilities are:
+   - the mnemonic should not be plain `mv`
+   - or the source is patching a wider operand form than currently reconstructed
+
+Most important conclusion
+-------------------------
+The project has moved from "many syntax/scope failures" to a very small set of
+high-value reconstruction ambiguities.
+
+At this point, the source is close enough that the next work should be done by
+checking the original magazine listing line-for-line around:
+
+- temp_ch
+- oct_flg_up / oct_flg_dw
+- 3-voice setup patching before beep_out3
+
+Files produced in this pass
+---------------------------
+- play3_xasm_candidate2.asm
+- PLAY3_XASM_progress_report_v2.txt
+
+Bottom line
+-----------
+This pass did not yet produce a verified object identical to PLAY3,
+but it significantly narrowed the unknown area.
+The remaining work is now concentrated in a handful of specific source lines,
+which is a very good state for a GitHub reconstruction workflow.
