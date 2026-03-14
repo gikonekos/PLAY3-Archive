@@ -1,5 +1,10 @@
 # PLAY3 Archive
 
+Archive and reconstruction of the PLAY3 three-voice buzzer music driver for the SHARP PC-E500 / PC-E550 pocket computers (1993).
+
+Real hardware demonstrations are available on YouTube.
+https://youtube.com/@gikonekos
+
 Reconstruction and historical archive of **PLAY3**,  
 a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer series**.
 
