@@ -1,0 +1,70 @@
+PLAY3 / XASM step07 report
+=========================
+
+Goal of this step
+-----------------
+Start from the step04 source again and rebuild a "local photo fix" variant that
+keeps the known step05 size-helpful edits, while applying only the corrected
+photo-confirmed ENTRY / MML_CONV changes from the latest image.
+
+Changes applied
+---------------
+From the step04 base, the following edits were applied:
+
+1. step05 size-helpful base edits
+   - ENTRY save/restore changed from `mv a,0` + `pushu a` / `popu a`
+     to `pushu x` / `popu x`
+   - INIT2 data-pointer loads changed to `[partN+data_s_adr]`
+   - MAIN2 compares changed to `jrnc` and final branch to `jrz exit`
+
+2. corrected-photo local front-half edits
+   - `mv y,!part1+!data_s_adr`
+   - `mv [!part3+!data_s_adr],y`
+   - `mv [!part2+!data_s_adr],y`
+   - `mv y,!data_buff`
+   - `mv [!part1+!data_s_adr],y`
+   - `mv (!oct_flg),0ffh`
+   - parser entry changed to `cmp a,!cr` / `jrz mml_conv_exit_c`
+   - inserted `dec x` before `mml_conv_lp`
+   - in the main parser loop, restored `cmp a,!cr` before `jrz mml_conv_exit_c`
+   - `cmp a,'T'` now uses `jrz temp2_ch`
+
+Assembler result
+----------------
+XASM 1.40 assembled successfully.
+
+Original PLAY3 file size : 1376 bytes
+New object file size     : 1384 bytes
+Original body size       : 1360 bytes
+New body size            : 1368 bytes
+Body delta               : +8 bytes
+
+Bytewise comparison
+-------------------
+Full-file exact match    : NO
+Body diff count          : 1059 differing byte(s) in the overlapping body range
+First body difference    : +0x0022 (0x0BF022)  original=FA  new=EF
+
+Interpretation
+--------------
+This corrected-photo local merge is much better than the fully literal step06
+(+21 bytes), but still worse than the size-matched step05 (+0 bytes).
+
+In other words:
+- the corrected photo is definitely useful for source fidelity
+- but the exact combination inserted here still expands the code by 8 bytes
+- so the next task is to cherry-pick only the byte-helpful parts from this
+  step07 build back into the step05 logic, instead of adopting the whole local
+  front-half block at once
+
+Most likely expensive edits in this step are:
+- the `!partX+!data_s_adr` direct forms
+- the restored `!data_buff` store sequence
+- the CR-handling prelude around `mml_conv_lp`
+
+Produced files
+--------------
+- play3_xasm_step07_localfix.asm
+- play3_xasm_step07_localfix.obj
+- play3_xasm_step07_localfix.lst
+- PLAY3_XASM_step07_report.txt
