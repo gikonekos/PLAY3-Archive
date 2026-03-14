@@ -1,0 +1,74 @@
+PLAY3 reconstruction binary comparison summary
+=============================================
+
+Reference file:
+  PLAY3
+  size = 1376 bytes
+  header = 16 bytes
+  body   = 1360 bytes (0x550)
+
+Compared objects:
+  play3_xasm_step01_clean.obj
+  play3_xasm_step04_beepfix.obj
+  play3_xasm_step07_localfix.obj
+
+Header observations
+-------------------
+All reconstructed OBJ files use the same 16-byte header format as PLAY3.
+The size word in the header reflects the body length:
+  PLAY3  : 0x0510? header field corresponds to body 0x550
+  step01 : body 0x55B
+  step04 : body 0x556
+  step07 : body 0x558
+
+Body comparison (header removed)
+--------------------------------
+1) step01
+   body size              : 1371 bytes
+   size delta vs PLAY3    : +11 bytes
+   overlapping mismatches : 1200
+   first mismatch         : body +0x0022 = 0xBF022
+   first bytes            : original 0xFA / reconstructed 0xE9
+
+2) step04
+   body size              : 1366 bytes
+   size delta vs PLAY3    : +6 bytes
+   overlapping mismatches : 1155
+   first mismatch         : body +0x0022 = 0xBF022
+   first bytes            : original 0xFA / reconstructed 0xE9
+
+3) step07
+   body size              : 1368 bytes
+   size delta vs PLAY3    : +8 bytes
+   overlapping mismatches : 1059
+   first mismatch         : body +0x0022 = 0xBF022
+   first bytes            : original 0xFA / reconstructed 0xEF
+
+Current best interpretation
+---------------------------
+- Best size match among currently available files: step04 (+6 bytes)
+- Best overlap mismatch count among currently available files: step07 (1059 mismatches)
+
+So there are currently two "best" candidates depending on metric:
+- step04 is best for total body length
+- step07 is best for byte agreement within the overlapping range
+
+Important note
+--------------
+Earlier work reached a size-matched state (0x550 body) in a transient step05,
+but those step05 files are not currently present in this environment.
+Therefore, the present report is limited to the files that are available now.
+
+Conclusion
+----------
+Algorithm recovery is effectively complete, but binary-identical reconstruction
+is still blocked by exact encoding details such as:
+
+- short vs long branch selection
+- XASM addressing forms like (!label), [label], [(!label)]
+- operand encoding in self-modifying sections
+- front-half parser / scheduler instruction forms
+
+Recommended next reconstruction target:
+  use step04/step07 as bases and continue instruction-by-instruction
+  normalization around entry, mml_conv, init/init2, and self-modifying mixer setup.
