@@ -194,6 +194,9 @@ Despite the PC-E500 having only a single piezo buzzer, the mixer rapidly
 switches between three independent frequency counters, allowing the ear to
 perceive simultaneous tones.
 
+The PLAY3 driver parses MML commands, schedules events across three voices,
+and generates polyphonic sound through a high-speed software mixing loop.
+
 ### MML Playback Engine
 
 PLAY3 interprets a simplified **Music Macro Language (MML)** format embedded in the BASIC `PLAY` command.
