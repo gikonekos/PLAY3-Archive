@@ -238,3 +238,142 @@ This repository is intended for:
 - historical preservation  
 - technical research  
 - educational purposes
+
+---
+
+# Quick Start
+
+To run PLAY3 on a real **SHARP PC-E500**:
+
+1. Load the BASIC loader program.
+2. Execute the loader to write the driver into RAM.
+3. The loader installs the PLAY3 driver at:
+
+BF000h
+
+4. After installation, the following commands become available:
+
+PLAY  
+EXOFF  
+
+Example:
+
+PLAY "T5O3CDEFG"
+
+The driver interprets the MML string and generates three-voice music
+using software time-division sound synthesis.
+
+---
+
+# Running on Real Hardware
+
+PLAY3 was designed specifically for the **SHARP PC-E500 series**.
+
+Compatible models include:
+
+- PC-E500  
+- PC-E500S  
+- PC-E550  
+- PC-E650  
+
+Because the driver relies on **cycle-accurate timing**, behaviour may vary
+on emulators unless the CPU timing is accurately reproduced.
+
+Testing in this project was performed using:
+
+- real PC-E500 hardware  
+- RAM dump comparison with reconstructed binaries
+
+---
+
+# Reconstruction Method
+
+The reconstruction process used in this archive includes several stages:
+
+1. Magazine listing transcription  
+2. OCR verification against original scans  
+3. Manual correction of OCR errors  
+4. Assembly reconstruction using XASM syntax  
+5. Binary generation  
+6. Verification against RAM dumps from real hardware  
+
+This process ensures that the reconstructed driver matches the behaviour
+of the original program as closely as possible.
+
+---
+
+# Why This Project Matters
+
+Japanese pocket computers represent a unique programming culture that is
+poorly documented outside Japan.
+
+Many programs were distributed only through magazine listings and have
+never been preserved digitally.
+
+PLAY3 is an example of advanced programming techniques used by hobbyist
+programmers to overcome hardware limitations.
+
+Despite having only a **single piezo buzzer**, PLAY3 achieves
+three-voice polyphonic music playback entirely in software.
+
+Projects like this help preserve an important part of computing history.
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Possible areas for improvement include:
+
+- improving the assembly reconstruction  
+- refining the driver memory map  
+- documenting the internal timing model  
+- adding additional PLAY3 music examples  
+- locating additional magazine material related to PLAY2 / PLAY3  
+
+If you have historical information about **Pocket Computer Journal**
+music drivers, please open an issue.
+
+---
+
+# Related Projects
+
+Other historical software sound drivers for the SHARP pocket computer
+series include:
+
+PLAYX  
+PLAY2  
+PLAY2L  
+
+PLAYX appears to have been written by a different author and represents
+a separate implementation lineage.
+
+Further research is ongoing.
+
+---
+
+# License
+
+This repository contains archival material originally published in a
+commercial magazine.
+
+The included materials are provided for:
+
+- historical preservation  
+- research and documentation  
+- educational purposes  
+
+If you are the original author or copyright holder and have concerns,
+please contact the repository maintainer.
+
+---
+
+# Author
+
+Archive project by:
+
+Kenkichi Motoi  
+(gikonekos)
+
+Dedicated to preserving the history of Japanese pocket computer software.
