@@ -1,9 +1,9 @@
 # PLAY3 Archive
 
 Reconstruction and historical archive of **PLAY3**,  
-a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer**.
+a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer series**.
 
-PLAY3 generates **three-voice polyphonic music from a single 1-bit internal buzzer**
+PLAY3 produces **three-voice polyphonic music from a single 1-bit internal buzzer**
 using software mixing.
 
 The original program was published in:
@@ -23,14 +23,39 @@ composed by **Kenkichi Motoi (1994)**.
 
 ---
 
+## System overview
+
+```
+PC-E500 Pocket Computer
+        │
+        │ internal 1-bit piezo buzzer
+        ▼
+PLAY2 / PLAY2L / PLAY3 driver
+        │
+        │ software mixing (time-division multiplexing)
+        ▼
+3-voice polyphonic music
+        │
+        ├─ Dash! (1994 RPG floor BGM)
+        ├─ Holy Night
+        ├─ VEZAR
+        └─ Bottakuri Shouten
+              │
+              ▼
+      Later used in PC-98 game
+      "Space Panicco" (1994)
+```
+
+---
+
 ## About PLAY3
 
-PLAY3 is a software music routine that produces **three simultaneous voices**
-using the internal piezo buzzer of the PC-E500 series.
+PLAY3 is a software music routine that generates **three simultaneous voices**
+using the internal piezo buzzer of the SHARP PC-E500 series.
 
-Since the hardware only supports a single tone output, the driver performs
-rapid time-division switching of multiple notes to create the perception of
-polyphony.
+Since the hardware only supports a single tone output, the driver rapidly
+switches between notes in a time-division manner, creating the perception
+of polyphonic sound.
 
 ---
 
@@ -54,9 +79,9 @@ reconstruction/  reconstructed XASM source code
 The `examples` directory contains original music programs written for the
 PLAY-series buzzer drivers.
 
-Examples include:
+Included examples:
 
-- **VEZAR** – example program used in demonstrations
+- **VEZAR** – demonstration program
 - **Dash!** – RPG floor BGM (1994)
 - **Holy Night** – Silent Night arrangement
 - **Bottakuri Shouten** – early music later used in the PC-98 game  
@@ -69,14 +94,30 @@ polyphonic drivers on pocket computers.
 
 ## Authors
 
-PLAY-series driver authors:
+PLAY-series music driver authors:
 
-- **PLAYX** – Keita Morita  
-- **PLAY2 / PLAY2L / PLAY3** – Ryu (Tatsuya Kobayashi / 小林龍也)
+- **PLAYX** — Keita Morita
+- **PLAY2 / PLAY2L / PLAY3** — Ryu (Tatsuya Kobayashi / 小林龍也)
 
-Example music:
+Example music in this repository:
 
 - **Kenkichi Motoi (基建吉)**
+
+---
+
+## Historical context
+
+Some example programs document music that later appeared in
+**PC-98 MS-DOS games**, illustrating the relationship between
+pocket computer music and early Japanese PC game soundtracks.
+
+For example:
+
+**"Bottakuri Shouten" (1994-05-11)**  
+was later used as background music in the PC-9801 game:
+
+**Space Panicco (すぺーすぱにっ娘)**  
+Released: **1994-09-20**
 
 ---
 
@@ -86,23 +127,16 @@ This project aims to preserve:
 
 - the original magazine publication
 - reconstructed XASM source code
-- working example programs
+- working example music programs
 - technical analysis of the driver
 
-for historical documentation of **buzzer-based polyphonic music systems**
+as historical documentation of **buzzer-based polyphonic music systems**
 on pocket computers.
-
----
-
-## Related historical material
-
-Some example programs also document music that later appeared in
-PC-98 games, showing the relationship between **pocket computer music**
-and **1990s Japanese PC game soundtracks**.
 
 ---
 
 ## License
 
 Original software and music remain the property of their respective authors.
-This repository serves as a historical archive.
+
+This repository is intended as a **historical preservation archive**.
