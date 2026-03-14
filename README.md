@@ -153,6 +153,47 @@ This map will be refined as the **XASM reconstruction progresses**.
 PLAY3 is a software music driver for the **SHARP PC-E500** pocket computer, originally published in *Pocket Computer Journal* (1993).  
 The program demonstrates an advanced technique for generating **three-voice polyphonic music using only the internal piezo buzzer**, which normally supports only single-tone output.
 
+## PLAY3 Architecture
+
+```
+MML text (PLAY command)
+        │
+        ▼
++--------------------+
+|  MML Parser        |
+|  (note / command)  |
++--------------------+
+        │
+        ▼
++--------------------+
+|  Event Scheduler   |
+|  (minimum length)  |
++--------------------+
+        │
+        ▼
++--------------------+
+|  Voice Manager     |
+|  part1 part2 part3 |
++--------------------+
+        │
+        ▼
++--------------------+
+|  Software Mixer    |
+|  ~20 kHz loop      |
++--------------------+
+        │
+        ▼
+   PC-E500 Buzzer
+```
+
+PLAY3 converts MML commands into note events, schedules them using the minimum
+remaining duration among all voices, and generates sound using a high-speed
+software mixer loop.
+
+Despite the PC-E500 having only a single piezo buzzer, the mixer rapidly
+switches between three independent frequency counters, allowing the ear to
+perceive simultaneous tones.
+
 ### MML Playback Engine
 
 PLAY3 interprets a simplified **Music Macro Language (MML)** format embedded in the BASIC `PLAY` command.
