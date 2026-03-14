@@ -148,6 +148,96 @@ This map will be refined as the **XASM reconstruction progresses**.
 
 ---
 
+## Technical Overview
+
+PLAY3 is a software music driver for the **SHARP PC-E500** pocket computer, originally published in *Pocket Computer Journal* (1993).  
+The program demonstrates an advanced technique for generating **three-voice polyphonic music using only the internal piezo buzzer**, which normally supports only single-tone output.
+
+### MML Playback Engine
+
+PLAY3 interprets a simplified **Music Macro Language (MML)** format embedded in the BASIC `PLAY` command.
+
+Supported commands include:
+
+- Note letters (`C D E F G A B`)
+- Sharp (`#`)
+- Octave control (`O`, `<`, `>`)
+- Note length (`L`)
+- Tempo (`T`)
+- Rest (`R`)
+
+The MML parser converts the text stream into internal note events consisting of:
+
+- pitch index
+- octave
+- length value
+
+These values are translated using lookup tables (`mml_data` and `length_data`) stored in the program.
+
+### Event Scheduler
+
+PLAY3 uses an **event-driven scheduler** rather than stepping each voice independently.
+
+For each playback cycle:
+
+1. The remaining note lengths of all active voices are compared.
+2. The **minimum length** among the voices is selected.
+3. All voice counters are reduced by that value.
+4. The resulting time slice is rendered by the sound generator.
+
+This approach keeps all voices synchronized while minimizing interpreter overhead.
+
+### Three-Voice Software Mixer
+
+The SHARP PC-E500 provides only a **single piezo buzzer**, so PLAY3 implements a software mixer.
+
+The mixer works as follows:
+
+- Each voice maintains its own **frequency counter**.
+- A high-speed loop (~48 µs per iteration) repeatedly updates these counters.
+- When a counter reaches zero, the buzzer output toggles and the counter reloads.
+
+Because the loop runs at approximately **20 kHz**, the rapid toggling of multiple square waves is perceived by the human ear as simultaneous tones.
+
+This technique effectively creates a **three-voice software PSG (Programmable Sound Generator)**.
+
+### Self-Modifying Sound Routine
+
+To improve performance, PLAY3 dynamically writes frequency values directly into the sound routine.
+
+During event setup:
+
+- voice frequency counters are written into the instruction stream
+- the mixer loop reads these values without additional memory lookups
+
+This **self-modifying code** significantly reduces the CPU cost of the mixer.
+
+### Timing Characteristics
+
+The core sound loop operates at roughly:
+
+- **37 CPU states per iteration**
+- **≈48 µs loop time**
+
+This yields a loop frequency of approximately:
+
+- **~20 kHz update rate**
+
+Such a high refresh rate allows the time-division multiplexing method to produce stable multi-voice audio on hardware designed for single-tone output.
+
+### Significance
+
+PLAY3 represents an impressive example of late-era pocket computer programming:
+
+- efficient MML interpretation
+- event-based sequencing
+- real-time multi-voice sound synthesis
+- careful cycle-level timing optimization
+
+Despite the extremely limited hardware of the PC-E500, PLAY3 achieves expressive polyphonic music entirely through software techniques.
+
+---
+
 # Driver Evolution
 
 PLAYX  (PJ 1992)  
