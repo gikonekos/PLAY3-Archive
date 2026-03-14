@@ -1,5 +1,7 @@
-Historical archive of the PLAY3 three-voice music driver
-for the SHARP PC-E500 series (Pocket Computer Journal, 1993).
+Reconstruction and historical archive of PLAY3, a 1993 software music driver that produces three-voice polyphonic music on the single 1-bit buzzer of the SHARP PC-E500 pocket computer.
+
+Originally published in Pocket Computer Journal (November 1993).
+
 # PLAY3 Archive
 
 Archive of the **PLAY3 three-voice music routine**  
@@ -193,6 +195,9 @@ The driver:
 Because this method depends on precise instruction timing,
 the driver is tuned to the **2.3 MHz system clock**.
 
+Despite having only a single 1-bit piezo buzzer output,
+PLAY3 achieves three-voice polyphonic music using
+cycle-accurate time-division sound synthesis.
 ---
 
 # Driver Internal Architecture (Analysis)
