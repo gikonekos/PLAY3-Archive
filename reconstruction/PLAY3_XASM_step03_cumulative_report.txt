@@ -1,0 +1,151 @@
+PLAY3 XASM step03 cumulative-delta report
+
+Inputs:
+  original : PLAY3
+  generated: play3_xasm_step01_clean.obj
+
+Original size           : 1376 bytes
+Generated OBJ size      : 1387 bytes
+Original body size      : 1360 bytes
+Generated body size     : 1371 bytes
+Final body delta        : +11 bytes
+
+Method:
+  Global byte alignment of body data (header excluded), then cumulative
+  delta tracking at major XASM symbols from play3_xasm_step01_clean.asm.
+
+Key finding:
+  The +11 byte final difference is not produced by one early offset drift.
+  The generated body is actually *smaller* through ENTRY/INIT/MAIN/MML,
+  then BEEP_OUT3 introduces a large +28 byte jump, and the tail area
+  drops from +19 to the final +11 near TEMP/COUNT1.
+
+Cumulative delta at major symbols
+(delta = generated offset - aligned original offset)
+
+0BF000  INSTALL     delta   +0
+0BF03F  ENTRY       delta   +0
+0BF1E9  INIT1       delta  -15
+0BF206  INIT2       delta  -19
+0BF230  MAIN2       delta  -16
+0BF357  EXIT        delta  -14
+0BF358  MML         delta  -14
+0BF3CC  BEEP_OUT0   delta  -14
+0BF3E1  BEEP_OUT3   delta  -14
+0BF3FD  BO3LP       delta  +14
+0BF401  BO3P11      delta  +14
+0BF40C  BO3P21      delta  +14
+0BF413  BO3P31      delta  +14
+0BF422  SK3         delta  +15
+0BF430  SK2         delta  +16
+0BF436  BO3P32      delta  +16
+0BF445  SK1         delta  +17
+0BF44F  BO3P22      delta  +17
+0BF456  BO3P33      delta  +17
+0BF465  SK12        delta  +18
+0BF46B  BO3P34      delta  +18
+0BF47A  SK13        delta  +19
+0BF485  BO3EX       delta  +19
+0BF48C  MML_DATA    delta  +19
+0BF50E  LENGTH_DATA  delta  +19
+0BF51E  TEMP        delta  +19
+0BF522  COUNT1      delta  +11
+0BF529  PART1       delta  +11
+0BF559  R_FLG       delta  +11
+
+Delta changes by region
+
+0BF03F ENTRY      -> 0BF1E9 INIT1      : change -15 bytes
+0BF1E9 INIT1      -> 0BF206 INIT2      : change -4 bytes
+0BF206 INIT2      -> 0BF230 MAIN2      : change +3 bytes
+0BF230 MAIN2      -> 0BF357 EXIT       : change +2 bytes
+0BF3E1 BEEP_OUT3  -> 0BF3FD BO3LP      : change +28 bytes
+0BF413 BO3P31     -> 0BF422 SK3        : change +1 bytes
+0BF422 SK3        -> 0BF430 SK2        : change +1 bytes
+0BF436 BO3P32     -> 0BF445 SK1        : change +1 bytes
+0BF456 BO3P33     -> 0BF465 SK12       : change +1 bytes
+0BF46B BO3P34     -> 0BF47A SK13       : change +1 bytes
+0BF51E TEMP       -> 0BF522 COUNT1     : change -8 bytes
+
+Most important hotspots
+
+1) BEEP_OUT3 entry
+   BEEP_OUT3 0xBF3E1 carries delta -14, but BO3LP 0xBF3FD is already +14.
+   Net change across this short range: +28 bytes.
+   This is the single largest growth point in the whole body.
+
+2) ENTRY / INIT / MAIN pre-core shrink
+   ENTRY to INIT1:  0 -> -15
+   INIT1 to INIT2: -15 -> -19
+   INIT2 to MAIN2: -19 -> -16
+   MAIN2 to EXIT : -16 -> -14
+   So before BEEP_OUT3, the reconstructed build is mostly shorter than the
+   original, not longer.
+
+3) Tail correction near TEMP / COUNT1
+   TEMP  0xBF51E : delta +19
+   COUNT1 0xBF522: delta +11
+   Net change: -8 bytes.
+   This means the final +11 byte difference is created by a large expansion
+   in BEEP_OUT3, partially cancelled by a late contraction near the tail.
+
+Likely interpretation
+
+- The core mismatch source is now strongly concentrated in BEEP_OUT3 and its
+  immediately following self-modifying/timing code.
+- The ENTRY/INIT/MAIN/MML areas still contain byte-level opcode differences,
+  but they do not explain the final +11 by themselves.
+- The tail area around TEMP/COUNT* should also be checked, because the
+  alignment drops by 8 bytes there.
+
+Suggested next step (step04)
+
+1. Compare only BEEP_OUT3 .. BO3EX as a local block.
+2. Verify each jump form (jr/jp), immediate width, and self-modifying writes.
+3. Then compare TEMP..PART1 to explain the late -8 byte correction.
+
+Alignment checkpoints every 0x20 original bytes
+(orig_off -> gen_off, delta)
+
+0020 -> 0020  delta   +0
+0040 -> 0040  delta   +0
+0060 -> 0062  delta   +2
+0080 -> 007D  delta   -3
+00A0 -> 0099  delta   -7
+00C0 -> 00BA  delta   -6
+00E0 -> 00D5  delta  -11
+0100 -> 00F3  delta  -13
+0120 -> 0111  delta  -15
+0140 -> 0130  delta  -16
+0160 -> 014C  delta  -20
+0180 -> 016D  delta  -19
+01A0 -> 018D  delta  -19
+01C0 -> 01AD  delta  -19
+01E0 -> 01D1  delta  -15
+0200 -> 01EF  delta  -17
+0220 -> 020D  delta  -19
+0240 -> 0230  delta  -16
+0260 -> 0250  delta  -16
+0280 -> 0270  delta  -16
+02A0 -> 0291  delta  -15
+02C0 -> 02B1  delta  -15
+02E0 -> 02D1  delta  -15
+0300 -> 02F1  delta  -15
+0320 -> 0311  delta  -15
+0340 -> 0331  delta  -15
+0360 -> 0351  delta  -15
+0380 -> 0372  delta  -14
+03A0 -> 0392  delta  -14
+03C0 -> 03B2  delta  -14
+03E0 -> 03D2  delta  -14
+0400 -> 040E  delta  +14
+0420 -> 0430  delta  +16
+0440 -> 0451  delta  +17
+0460 -> 0472  delta  +18
+0480 -> 0493  delta  +19
+04A0 -> 04B1  delta  +17
+04C0 -> 04D1  delta  +17
+04E0 -> 04F1  delta  +17
+0500 -> 0513  delta  +19
+0520 -> 052B  delta  +11
+0540 -> 054B  delta  +11
