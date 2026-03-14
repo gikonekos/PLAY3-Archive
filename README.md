@@ -1,3 +1,5 @@
+Historical archive of the PLAY3 three-voice music driver
+for the SHARP PC-E500 series (Pocket Computer Journal, 1993).
 # PLAY3 Archive
 
 Archive of the **PLAY3 three-voice music routine**  
