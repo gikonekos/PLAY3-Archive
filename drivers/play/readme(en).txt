@@ -1,3 +1,6 @@
+This directory contains the early two-voice PLAY driver by Ryu
+for the SHARP PC-E500 series (1992).
+
 -------------------------------------------------------------------------------
                                "PLAY"
                         For PC-E500 / PC-1480U
