@@ -1,0 +1,90 @@
+PLAY3 / XASM step05 report
+========================
+
+Goal of this step
+-----------------
+Apply the subset of front-half fixes that actually improve the assembled size,
+based on the enlarged magazine photos and on measured XASM output size.
+
+Winning fix combination
+-----------------------
+The following three changes turned out to be the best combination from the
+step04 base:
+
+1. ENTRY save/restore block
+   - `pushu a` / `popu a` was changed to `pushu x` / `popu x`
+   - the extra `mv a,0` before the far call was removed
+
+2. INIT2 data pointer load form
+   - `mv y,[(!part1)+3]` style loads were changed to
+     `mv y,[part1+data_s_adr]`
+   - same for part2 / part3
+
+3. MAIN2 minimum-length compare block
+   - `jrc` was changed to `jrnc`
+   - final `jpz exit` was changed to `jrz exit`
+
+Assembler result
+----------------
+XASM 1.40 assembled the new source successfully.
+
+Original PLAY3 file size : 1376 bytes
+New object file size     : 1376 bytes
+Original body size       : 1360 bytes
+New body size            : 1360 bytes
+Body delta               : +0 bytes
+
+This is the first reconstructed source in this session that reaches the exact
+printed body length of 0x550 bytes.
+
+Bytewise comparison
+-------------------
+Even though the size now matches exactly, the bytes are not yet identical.
+
+Full-file exact match    : NO
+Body diff count          : 1083 differing byte(s)
+First body difference    : +0x0022 (0x0BF022)  original=FA  new=E7
+
+First 16 body differences
+-------------------------
++0x0022  0x0BF022  original=FA  new=E7
++0x004D  0x0BF04D  original=19  new=04
++0x0058  0x0BF058  original=EE  new=DD
++0x005F  0x0BF05F  original=EF  new=DE
++0x0065  0x0BF065  original=0D  new=30
++0x0066  0x0BF066  original=19  new=9D
++0x0067  0x0BF067  original=F5  new=80
++0x0068  0x0BF068  original=0B  new=1E
++0x0069  0x0BF069  original=AD  new=03
++0x006A  0x0BF06A  original=F4  new=AD
++0x006B  0x0BF06B  original=F1  new=E3
++0x006C  0x0BF06C  original=0B  new=F1
++0x006D  0x0BF06D  original=0D  new=0B
++0x006E  0x0BF06E  original=ED  new=0D
++0x006F  0x0BF06F  original=F1  new=DC
++0x0070  0x0BF070  original=0B  new=F1
+
+Interpretation
+--------------
+This is an important milestone:
+
+- the assembled code range is now exactly BF000-BF54F
+- the reconstructed source now has the same overall code size as the original
+- but the byte stream still diverges substantially, so there are still
+  addressing-form and/or opcode-choice mismatches inside earlier blocks
+
+In other words, step05 solved the *length* problem, but not yet the *exact
+binary reproduction* problem.
+
+Most likely remaining sources of mismatch are:
+- early control-flow opcode choices in MML conversion
+- internal-RAM addressing forms using `!label` versus `[label+offset]`
+- possibly some data-pointer initialization details that preserve length but
+  not opcode bytes
+
+Produced files
+--------------
+- play3_xasm_step05_frontfix.asm
+- play3_xasm_step05_frontfix.obj
+- play3_xasm_step05_frontfix.lst
+- PLAY3_XASM_step05_report.txt
