@@ -11,7 +11,7 @@ Originally published in:
 
 Pocket Computer Journal  
 November 1993 issue
-
+---
 ## Demo
 
 PLAY3 running on a SHARP PC-E500.
@@ -398,6 +398,36 @@ The included materials are provided for:
 
 If you are the original author or copyright holder and have concerns,
 please contact the repository maintainer.
+
+---
+
+## Credits
+
+Original program  
+PLAY3  
+(C) 1993 Ryu (Tatsuya Kobayashi / 小林龍也)
+
+Archive and reconstruction  
+Kenkichi Motoi (gikonekos)
+
+Source publication  
+Pocket Computer Journal, 1993
+
+---
+
+## Original Author
+
+PLAY3 was originally written by **Ryu (Tatsuya Kobayashi / 小林龍也)**.
+
+He was an active contributor to Japanese pocket computer magazines and
+a user of the "Pocket Communication" BBS community during the early 1990s.
+
+Kobayashi was known for his deep understanding of pocket computer hardware
+and for developing advanced software techniques that pushed the limits
+of the SHARP PC-E500 series.
+
+PLAY3 is a notable example: it produces three-voice polyphonic music
+using only the internal piezo buzzer through carefully timed software mixing.
 
 ---
 
