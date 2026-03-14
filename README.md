@@ -10,6 +10,14 @@ Originally published in:
 Pocket Computer Journal  
 November 1993 issue
 
+## Demo
+
+PLAY3 running on a SHARP PC-E500.
+The video shows the PLAY3 driver playing the example music "VEZAR".
+
+[![PLAY3 demo](https://img.youtube.com/vi/pbo1Mc-6PrA/0.jpg)](https://youtu.be/pbo1Mc-6PrA)
+
+Video demonstration of the reconstructed PLAY3 driver running on real hardware.
 ---
 
 # Documentation
@@ -70,6 +78,8 @@ This includes:
 - verification against real machine RAM dumps  
 - documentation of the driver architecture
 
+The reconstructed binary has been verified against RAM dumps
+taken from a real SHARP PC-E500.
 ---
 
 # Driver Architecture
