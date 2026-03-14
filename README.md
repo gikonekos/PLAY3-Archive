@@ -239,6 +239,16 @@ Documentation  : in progress
 
 ---
 
+## Historical sources
+
+Some historical PC-E500 materials were recovered from archived websites.
+
+Internet Archive (Wayback Machine):
+https://web.archive.org/web/20160303221141/http://www46.atpages.jp/~qptn/cgi-bin/up/stored/E500.zip
+
+The archive contains preserved PC-E500 binaries that helped verify
+the reconstructed PLAY3 driver.
+
 # Copyright
 
 The original PLAY3 program was published in:
