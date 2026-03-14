@@ -343,6 +343,13 @@ three-voice polyphonic music playback entirely in software.
 
 Projects like this help preserve an important part of computing history.
 
+This archive contains the reconstruction of PLAY3 for the SHARP PC-E500,
+originally published in Pocket Computer Journal (1993).
+
+The binary used for verification was obtained directly from the original
+author. The project aims to reconstruct the original XASM source so that
+the reassembled binary matches the original program.
+
 ---
 
 # Contributing
