@@ -1,0 +1,106 @@
+PLAY3 / XASM step01 report
+==========================
+
+Goal of this step
+-----------------
+Create a cleaned XASM-oriented source that actually assembles, while preserving
+as much of the scanned reconstruction as possible.
+
+Input files
+-----------
+- play3_scaned.asm
+- play3_xasm_candidate2.asm
+- PLAY3
+- scan-001.pdf
+- XASM 1.40 from nup0035.zip
+
+What was fixed in step01
+------------------------
+1. Resolved the remaining PASS1 blockers from candidate2.
+   - temp_ch: `add a,[temp]` -> `add a,!temp`
+   - oct_flg_up / oct_flg_dw split through register A:
+       mv a,[(!octerve_adr)]
+       mv (!oct_flg),a
+
+2. Converted the two output local blocks into XASM-stable global labels.
+   Reason: patch targets like `[beep_out3!part1_co1+1]` assembled poorly as
+   forward references to nested local labels. Replacing them with short global
+   labels removed this instability.
+
+3. Fixed local/global forward-reference issues inside the `entry` local block.
+   - references to global data after ENDL needed `!` prefix
+   - some expressions also needed literal offsets instead of symbolic offsets
+     to satisfy PASS2 (`[(!part1)+3]` etc.)
+
+4. Fixed obvious scanned typos that prevented clean control flow.
+   - `skip112` -> `sk12`
+   - `skip113` -> `sk13`
+   - `skip1_exit` reference corrected back to `skip_exit`
+
+Assembler result
+----------------
+Command used:
+  xasm play3_xasm_step01_clean.asm -oplay3_xasm_step01_clean.obj
+
+Result:
+  PASS1 : OK
+  PASS2 : OK
+
+Assembler summary:
+  Code: 0BF000h - 0BF55Ah [1371 byte(s)]
+
+Produced files
+--------------
+- play3_xasm_step01_clean.asm
+- play3_xasm_step01_clean.obj
+- PLAY3_XASM_step01_report.txt
+
+Comparison with original PLAY3
+------------------------------
+Original PLAY3 file size:
+  1376 bytes
+
+New XASM object size:
+  1387 bytes
+
+Interpretation:
+- Original PLAY3 appears to contain a 16-byte machine-language file header
+  plus 1360 bytes of body (matching SAVE range BF000-BF54F).
+- New XASM object also contains a 16-byte header, but its body is 1371 bytes.
+- Therefore the current reconstructed source assembles cleanly, but is still
+  11 bytes larger than the target body.
+
+Quick binary comparison
+-----------------------
+- First file-level difference occurs at offset 0x0005.
+- Header/body structure is similar enough to confirm that object generation is
+  working normally.
+- However, the assembled body diverges heavily from the original binary very
+  early, so this is not yet a near-match.
+
+Most important conclusion
+-------------------------
+This is the first step that achieved a fully assembling XASM source.
+The project has moved from:
+  "syntax recovery"
+to:
+  "binary-accuracy recovery"
+
+That is a major milestone.
+
+Likely next focus for step02
+----------------------------
+1. Re-check all places where step01 used XASM-stability substitutions rather
+   than magazine-faithful forms.
+2. Verify the exact operand forms around the initialization of pointers and
+   output patch values.
+3. Compare generated object against PLAY3 by region, not just whole-file.
+4. Identify where the extra 11 bytes are introduced.
+
+Practical status for GitHub
+---------------------------
+`play3_xasm_step01_clean.asm` is suitable to upload as an intermediate
+reconstruction milestone because:
+- it is buildable with XASM
+- the cleanup decisions are documented
+- it is clearly marked as not yet binary-identical
