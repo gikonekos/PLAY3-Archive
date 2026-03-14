@@ -1,0 +1,47 @@
+PLAY3 vs play3_xasm_step01_clean.obj diff report
+
+Original file size : 1376 bytes
+Generated obj size : 1387 bytes
+Header size        : 16 bytes
+Original body size : 1360 bytes (expected 0x550)
+Generated body size: 1371 bytes
+Body delta         : +11 bytes
+
+Header comparison:
+PLAY3 : FF 00 06 01 10 50 05 00 00 F0 0B FF FF FF 00 0F
+OBJ   : FF 00 06 01 10 5B 05 00 00 F0 0B FF FF FF 00 0F
+
+First body mismatch at offset +0x0022 (absolute 0xBF022)
+PLAY3 byte = FA
+OBJ   byte = E9
+
+Context around first mismatch:
+PLAY3
+0012: 07 0C FF FF 0F 30 BC 80 D1 90 30 BC 80 D1 93 05
+0022: FA F1 0B 07 04 50 4C 41 59 1F 05 45 58 4F 46 46
+0032: 02 00 00 1F 3F F0 8B 02 13 F0 8B 00 00 2F 30 CC
+OBJ
+0012: 07 0C FF FF 0F 30 BC 80 D1 90 30 BC 80 D1 93 05
+0022: E9 F1 0B 07 04 50 4C 41 59 1F 05 45 58 4F 46 46
+0032: 02 00 00 1F 3F F0 8B 02 13 F0 8B 00 00 2F 30 CC
+
+After the first mismatch, the streams realign for at least 16 bytes again at +0x0023 (0xBF023).
+This suggests the first mismatch is an isolated opcode/immediate difference, not yet the main insertion point.
+
+Largest matching blocks (body offsets):
+PLAY3 +0x04F9 == OBJ +0x050C, size 0x4F (79 bytes)
+PLAY3 +0x0390 == OBJ +0x0382, size 0x28 (40 bytes)
+PLAY3 +0x0023 == OBJ +0x0023, size 0x26 (38 bytes)
+PLAY3 +0x0000 == OBJ +0x0000, size 0x22 (34 bytes)
+PLAY3 +0x0374 == OBJ +0x0366, size 0x1B (27 bytes)
+PLAY3 +0x03CF == OBJ +0x03C1, size 0x1B (27 bytes)
+PLAY3 +0x0199 == OBJ +0x0186, size 0x16 (22 bytes)
+PLAY3 +0x01DF == OBJ +0x01D0, size 0x10 (16 bytes)
+PLAY3 +0x02AC == OBJ +0x029D, size 0x10 (16 bytes)
+PLAY3 +0x0128 == OBJ +0x0119, size 0xF (15 bytes)
+
+Interpretation:
+- The first difference is only 1 byte at 0xBF022.
+- The generated body is 11 bytes longer overall.
+- Matching-block offsets show the generated OBJ gradually drifts ahead of the original, reaching about +0x11 by the late body.
+- So this is not one big insertion; it is more likely multiple instruction-size differences (for example jr/jp, addressing mode expansion, or OCR-driven operand form changes).
