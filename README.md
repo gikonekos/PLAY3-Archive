@@ -19,7 +19,7 @@ The original program was published in:
 
 ## Demo
 
-PLAY3 running on a real **SHARP PC-E500**.
+PLAY3 running on a real **SHARP PC-E550 pocket computer.**
 
 https://youtu.be/T1-_uG7e5Q0
 
