@@ -6,7 +6,7 @@ for the SHARP PC-E500 pocket computer.
 ## Files
 
 - dash.bas – early prototype version
-- dash1.bas – intermediate version
+- dash0.bas – intermediate version
 - dash2.bas – final version
 
 ## Original timestamps
@@ -14,7 +14,7 @@ for the SHARP PC-E500 pocket computer.
 These files retain their original timestamps from 1994:
 
 - dash.bas – 1994-05-11
-- dash1.bas  – 1994-05-11
+- dash0.bas  – 1994-05-11
 - dash2.bas – 1994-05-11
 
 ## Background
