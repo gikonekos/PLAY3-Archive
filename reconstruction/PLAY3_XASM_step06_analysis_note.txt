@@ -1,0 +1,104 @@
+PLAY3 XASM step06 analysis note
+================================
+
+Status
+------
+step05 reaches the correct total body size (0x550 bytes), but the generated
+body still differs heavily from the original PLAY3 binary. The remaining
+mismatch is not just small branch-length noise: there are still clear source-
+level divergences in the early MML_CONV block.
+
+Key findings from step05 listing vs magazine photos
+---------------------------------------------------
+
+1. MML_CONV is still semantically different from the printed source.
+
+Printed source (photo, lines 111-117) shows:
+
+    mv y,!part1+!data_s_adr
+    mv [MML_data_adr],y
+    mv y,not_data
+    mv [!part3+!data_s_adr],y
+    mv [!part2+!data_s_adr],y
+    mv y,!data_buff
+    mv [!part1+!data_s_adr],y
+
+But step05 listing currently emits:
+
+    0BF065  mv y,[(!part1)+3]
+    0BF06A  mv [MML_data_adr],y
+    0BF06E  mv y,not_data
+    0BF072  mv [(!part3)+3],y
+    0BF077  mv [(!part2)+3],y
+
+The two lines:
+
+    mv y,!data_buff
+    mv [!part1+!data_s_adr],y
+
+are still missing in step05.
+
+2. First-character handling in MML_CONV still does not match the printed source.
+
+Printed source (photo, lines 121-128) shows:
+
+    mv  (!oct_flg),0ffh
+    mv  a,[x++]
+    cmp a,!cr
+    jrz mml_conv_exit_c
+    cmp a,'"'
+    jrz mml_conv_lp
+    dec x
+mml_conv_lp:
+    mv  a,[x++]
+
+But step05 listing currently emits:
+
+    0BF07C  mv (!oct_flg),0fh
+    0BF080  mv a,[x++]
+    0BF082  cmp a,'"'
+    0BF084  jrz mml_conv_exit
+    0BF086  cmp a,'"'
+    0BF088  jrz mml_conv_lp
+    0BF08A  mml_conv_lp: mv a,[x++]
+
+So step05 is still missing the CR test and the DEC X before the loop label.
+It also uses 0Fh instead of 0FFh at oct_flg initialization.
+
+3. Early address differences in the binary are mostly downstream effects.
+
+The first file difference is at file offset 0x32 (body address BF022), but that
+byte is part of CALLF !INIT1. This means the earliest visible mismatch is
+already influenced by different later label placement; it is not by itself the
+root cause.
+
+Useful addresses from the current step05 listing
+------------------------------------------------
+ENTRY      BF03F
+MML_CONV   BF057
+INIT1      BF1E7
+INIT2      BF204
+MAIN2      BF22B
+EXIT       BF351
+
+Concrete next target
+--------------------
+The next revision should focus on making MML_CONV match the magazine exactly,
+even if body size temporarily drifts again.
+
+Highest-priority fixes:
+- restore:
+      mv y,!data_buff
+      mv [!part1+!data_s_adr],y
+- change oct_flg init back to 0FFh
+- restore:
+      cmp a,!cr
+      jrz mml_conv_exit_c
+      cmp a,'"'
+      jrz mml_conv_lp
+      dec x
+
+Expectation
+-----------
+After those corrections, the body may stop matching 0x550 temporarily, but the
+actual byte sequence should move much closer to the original PLAY3.
