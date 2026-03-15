@@ -139,6 +139,77 @@ binary size difference.
 
 ---
 
+## Confirmed branch-size discrepancy
+
+Further investigation revealed a concrete source-level cause for part of the binary mismatch.
+
+The reconstructed source currently contains six occurrences of:
+
+    jp mml_conv_lp
+
+However, analysis suggests that the original magazine source used a shorter relative branch (`jr`) in these locations.
+
+Instruction size difference:
+
+| instruction | size |
+|-------------|------|
+| jr          | 2 bytes |
+| jp          | 3 bytes |
+
+As a result, each `jp` introduces an extra byte.
+
+Total confirmed difference:
+
+    6 occurrences × 1 byte = 6 bytes
+
+This accounts for part of the overall body size difference:
+
+Original code size:      1360 bytes  
+Reconstructed code size: 1391 bytes  
+Difference:              +31 bytes
+
+The remaining 25-byte difference is still under investigation.
+
+The reason `jp` was introduced during reconstruction was that the assembler reported:
+
+    Branch too far
+
+indicating that the relative jump range had been exceeded.
+
+This suggests that the original code may have used one of the following techniques:
+
+* intermediate labels ("branch trampolines")
+* different code layout
+* alternative conditional branching structures
+
+Further investigation is required to determine how the original code kept the branches within relative range.
+
+---
+
+## Confirmed instruction-encoding discrepancy
+
+Further binary inspection identified another concrete source-level cause of the mismatch.
+
+The reconstructed source uses XASM forms such as `pushs imr`, `pops imr`, `pushs x`, and `pops x`, but the original binary uses shorter one-byte opcodes for the corresponding operations.
+
+Observed examples:
+
+| operation | reconstructed bytes | size | original bytes | size |
+|-----------|---------------------|------|----------------|------|
+| pushs imr | `30 e8 37 fb` | 4 | `2f` | 1 |
+| pops imr  | `30 e0 27 fb` | 4 | `3f` | 1 |
+| pushs x   | `b4 37`       | 2 | `2c` | 1 |
+| pops x    | `94 27`       | 2 | `3c` | 1 |
+
+This accounts for 8 bytes of the remaining difference:
+
+- `pushs/pops imr`: 6 bytes
+- `pushs/pops x`: 2 bytes
+
+This strongly suggests that the historical source used shorter native opcodes (or different assembler mnemonics) rather than the longer XASM-expanded `pushs/pops` forms used in the current reconstruction.
+
+---
+
 ## Conclusion
 
 The project has progressed beyond file-format uncertainty.
