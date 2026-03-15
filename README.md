@@ -1,9 +1,6 @@
 # PLAY3 Archive
 
-Archive and reconstruction of the PLAY3 three-voice buzzer music driver for the SHARP PC-E500 / PC-E550 pocket computers (1993).
-
-Real hardware demonstrations are available on YouTube.
-https://youtube.com/@gikonekos
+Archive and reconstruction of the PLAY3 three-voice buzzer music driver for the SHARP PC-E500 / PC-E550 pocket computers (1993)
 
 Reconstruction and historical archive of **PLAY3**,  
 a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer series**.
@@ -19,12 +16,12 @@ The original program was published in:
 
 ## Demo
 
-PLAY3 running on a real **SHARP PC-E550 pocket computer.**
+Demonstrations of music playback on the SHARP PC-E500 / PC-E550 pocket computers using the PLAY3 software music driver.  
+These videos show reconstructed programs and example songs running on real hardware.
 
-https://youtu.be/T1-_uG7e5Q0
+Watch the full playlist:
 
-The music in the video is an original RPG floor BGM titled **"Dash!"**
-composed by **Kenkichi Motoi (1994)**.
+https://youtube.com/playlist?list=PL0MMNZ2b8g1aup5tHZkTpCn9zczGLA3Rw
 
 ---
 
