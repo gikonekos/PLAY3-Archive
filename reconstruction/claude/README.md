@@ -4,6 +4,8 @@
 
 This repository preserves the complete assembler source code (XASM format) of PLAY3, reconstructed from magazine scans after over 30 years.
 
+play3_xasm.asm has all inline comments stripped for XASM parser compatibility. See play3_photo.asm for the fully annotated version.
+
 ---
 
 ## Files
