@@ -1,74 +1,105 @@
-# PLAY3 Voice Mixing
+# PLAY3 Mixing Algorithm
 
-PLAY3 produces three-voice pseudo polyphony using a time-division
-mixing algorithm.
+This document describes the currently understood mixing mechanism used by the **PLAY3 music driver** for the **SHARP PC-E500** pocket computer.
 
-Instead of switching voices at fixed time slices, PLAY3 uses a
-counter-driven event system.
-
----
-
-## Voice Counters
-
-Each voice has its own counter:
-
-```
-voice1 counter
-voice2 counter
-voice3 counter
-```
-
-These counters correspond to the waveform period.
+PLAY3 generates **three-voice polyphonic music using only the internal 1-bit piezo buzzer**.  
+Because the hardware provides only a single binary output, the driver must implement polyphony entirely in software.
 
 ---
 
-## Mixing Loop
+# Overview
 
-During each iteration of the sound loop the counters are decremented.
+PLAY3 does **not** appear to use rapid arpeggio or simple time-division multiplexing.
 
-```
-loop:
-    dec voice1
-    dec voice2
-    dec voice3
+Instead, the driver uses a **pulse-trigger mixing method** that resembles **Wave Peak Modulation (WPM)**.
 
-    if voice1 == 0 toggle beep
-    if voice2 == 0 toggle beep
-    if voice3 == 0 toggle beep
-```
+Each voice maintains its own internal phase state representing the position of a conceptual waveform.  
+When the phase reaches the waveform peak, the routine emits a **short trigger pulse** to the buzzer output.
 
-When a counter reaches zero the waveform is toggled and the counter
-is reloaded.
+If multiple channels reach their peak within the same cycle, the pulses are **combined before the final buzzer output**.
+
+As a result, the audible waveform is formed from the **superposition of peak pulses from multiple voices**.
 
 ---
 
-## Resulting Waveform
+# Conceptual Model
 
-Example for a C–E–G chord:
+Each channel behaves conceptually like this:
 
-```
-time →
+    phase += frequency
+    if phase reaches peak:
+        trigger pulse
 
-C  █     █     █
-E    █     █     █
-G      █     █
-```
+For three channels:
 
-The combined waveform contains the frequency components of all
-voices.
+    ch1 peak → pulse
+    ch2 peak → pulse
+    ch3 peak → pulse
 
-Although the PC-E500 only outputs a single bit signal, the human ear
-perceives the mixture as multiple simultaneous tones.
+The pulses are then merged into the final 1-bit output.
+
+Conceptually:
+
+    output = pulse_ch1 OR pulse_ch2 OR pulse_ch3
+
+The resulting pulse density approximates a composite waveform produced by multiple voices.
 
 ---
 
-## Advantages of the Method
+# Voice-Count Specific Routines
 
-This event-driven mixing algorithm has several advantages:
+The PLAY3 playback engine contains **separate routines depending on the number of active voices**.
 
-* stable pitch
-* minimal CPU overhead
-* efficient multi-voice synthesis
+This avoids conditional branching inside the timing-critical inner loop.
 
-The design effectively turns the PC-E500 into a small software
-polyphonic synthesizer.
+    beep_out0 : no active voice
+    beep_out1 : single voice
+    beep_out2 : two-voice mixing
+    beep_out3 : three-voice mixing
+
+This design ensures:
+
+- stable timing  
+- minimal branching overhead  
+- predictable CPU cycle usage  
+
+which is critical when driving the buzzer directly from software.
+
+---
+
+# Relation to WPM (Wave Peak Modulation)
+
+The PLAY3 technique resembles **Wave Peak Modulation**, where very short pulses are emitted at waveform peaks in order to approximate analog waveforms using a 1-bit output device.
+
+Key properties:
+
+- pulse-based waveform synthesis  
+- multiple voices combined at pulse level  
+- higher perceived sound quality than simple square-wave toggling  
+- avoids rapid arpeggio tricks  
+
+Thus, PLAY3 behaves as a **software polyphonic mixer for a 1-bit audio device**.
+
+---
+
+# Timing Characteristics
+
+During playback the driver typically:
+
+- disables interrupts  
+- dedicates the CPU almost entirely to sound generation  
+- executes tightly timed loops for buzzer output  
+
+This allows precise control of pulse timing despite the extremely limited audio hardware.
+
+---
+
+# Notes
+
+The interpretation above is derived from:
+
+- reconstructed XASM source code  
+- binary comparison with the original program  
+- observed runtime behaviour on real hardware  
+
+Some internal implementation details may still evolve as reconstruction progresses.
