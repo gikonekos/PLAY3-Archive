@@ -1,7 +1,5 @@
 # PLAY3 Binary Header Analysis
 
-Reference binaries used for header comparison are included in `reconstruction/arc`.
-
 This document analyzes the machine-language file header used by the historical `PLAY3` binary and compares it with other real SHARP PC-E500 series machine-language binaries.
 
 Reference comparison files used here are included in:
