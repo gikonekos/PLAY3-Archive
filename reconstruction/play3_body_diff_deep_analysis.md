@@ -110,17 +110,32 @@ The cause may be one of the following, or a combination:
 
 ---
 
-## Why PLAYX matters
+## Final discrepancy candidate
 
-A PLAYX scan is highly relevant at this stage.
+Manual comparison with the original magazine scan revealed a likely transcription error
+in the `mml_onp` routine.
 
-If PLAY3 inherits table or driver structure from PLAYX, then comparing the scan-level source layout may reveal:
+The printed listing shows:
 
-- where the extra entries came from
-- whether a table was expanded during reconstruction
-- whether a label-derived pointer table was rebuilt differently
+    pushua
+    ...
+    popu a
+    ...
+    popu y
 
-This makes PLAYX an important candidate for resolving the final remaining mismatch.
+while the reconstructed source used:
+
+    pushs a
+    ...
+    pops a
+    ...
+    pops y
+
+This difference may produce a binary mismatch depending on how the assembler
+encodes these instructions.
+
+Further verification will determine whether this accounts for the remaining
+binary size difference.
 
 ---
 
