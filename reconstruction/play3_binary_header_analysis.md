@@ -1,35 +1,32 @@
-# PLAY3 Header Format Analysis
+# PLAY3 Binary Header Analysis
 
 Reference binaries used for header comparison are included in `reconstruction/arc`.
 
-This document analyzes the machine-language file header used by the historical PLAY3 binary and compares it with other real SHARP PC-E500 series binary files.
+This document analyzes the machine-language file header used by the historical `PLAY3` binary and compares it with other real SHARP PC-E500 series machine-language binaries.
 
-The purpose is to determine whether the difference between `PLAY3` and the reconstructed `play3_xasm.obj` is caused by file format or by the machine code body itself.
+Reference comparison files used here are included in:
+
+- `reconstruction/arc/3D`
+- `reconstruction/arc/YM`
+
+The purpose of this analysis is to determine which parts of the file format are fixed header metadata and which parts belong to the actual machine-code body.
 
 ---
 
 ## Files compared
 
-The following real machine-language files were compared:
-
 | File | Size |
-|------|------:|
+|------|-----:|
 | PLAY3 | 1376 bytes |
 | play3_xasm.obj | 1407 bytes |
 | YM | 3504 bytes |
 | 3D | 1681 bytes |
 
-For reference, ASCII BASIC files were also provided, but they are not part of the machine-language header comparison:
-
-- `BOTTA2.BAS`
-- `HOLY.BAS`
-- `DASH2.BAS`
-
 ---
 
-## Common header structure
+## Common 16-byte header
 
-The first 16 bytes of each machine-language file are:
+All compared machine-language binaries begin with the same 16-byte outer structure.
 
 ### PLAY3
 
@@ -55,23 +52,13 @@ FF 00 06 01 10 A0 0D 00 00 E0 0B FF FF FF 00 0F
 FF 00 06 01 10 81 06 00 00 E0 0B FF FF FF 00 0F
 ```
 
-These files clearly share the same header format.
+This confirms that the files belong to the same external machine-language file format.
 
 ---
 
-## Confirmed result: 16-byte common machine-language header
+## Confirmed field: body length
 
-All compared machine-language files begin with the same 16-byte header structure.
-
-This means that `play3_xasm.obj` is not merely an assembler-internal object file format unrelated to the real machine; it already uses the same external machine-language file structure as the historical binaries.
-
-Therefore, the difference between `PLAY3` and `play3_xasm.obj` is **not** caused by a different header format.
-
----
-
-## Confirmed result: body size is stored in the header
-
-A strong pattern appears in bytes 5-6 of the header.
+Bytes 5-6 store the machine-code body length in little-endian order.
 
 ### PLAY3
 
@@ -101,126 +88,133 @@ A strong pattern appears in bytes 5-6 of the header.
 - `1665 = 0x0681`
 - header bytes 5-6: `81 06`
 
-This confirms that:
+This field is now strongly confirmed.
 
-- bytes **5-6** store the machine-code body length
-- encoding is **little-endian**
-- the header length itself is **16 bytes**
+---
+
+## Strong hypothesis: byte 4 indicates header size
+
+All compared binaries contain `10` at byte 4.
+
+The executable body begins immediately after the first 16 bytes in all observed cases.
+
+This strongly suggests that byte 4 (`0x10`) represents the header size or data-start offset.
+
+That is:
+
+- byte 4 = `0x10`
+- header length = `16 bytes`
+
+This interpretation matches all compared files.
+
+---
+
+## Strong hypothesis: bytes 9-10 encode the load address in 256-byte units
+
+The most important new observation comes from `play3_xasm.asm`.
+
+The reconstructed source contains:
+
+```asm
+org 0bf000h
+```
+
+The generated `play3_xasm.obj` contains the following header bytes at positions 9-10:
+
+```hex
+F0 0B
+```
+
+Interpreted as a little-endian value:
+
+```text
+0x0BF0
+```
+
+If this value is multiplied by `0x100`, the result is:
+
+```text
+0x0BF0 << 8 = 0x0BF000
+```
+
+This exactly matches the `ORG` address used in the source.
+
+Therefore, bytes 9-10 are very likely an address field representing the machine-code load origin in 256-byte units.
+
+This interpretation also fits the other binaries:
+
+- PLAY3: `F0 0B` -> `0x0BF000`
+- YM: `E0 0B` -> `0x0BE000`
+- 3D: `E0 0B` -> `0x0BE000`
+
+The exact semantics still need further confirmation, but this field is clearly address-related and is very likely the load origin.
 
 ---
 
 ## Provisional header interpretation
 
-Based on the compared files, the header can be described as:
+Based on the currently available evidence, the 16-byte header can be described as follows:
 
-| Offset | Bytes | Meaning |
-|--------|-------|---------|
+| Offset | Bytes | Interpretation |
+|--------|-------|----------------|
 | 00 | `FF` | file marker |
-| 01 | `00` | file type or fixed value |
-| 02-04 | `06 01 10` | constant field, exact meaning not yet confirmed |
+| 01 | `00` | fixed value / file type |
+| 02-03 | `06 01` | unknown fixed field |
+| 04 | `10` | header length or body offset |
 | 05-06 | length | machine-code body length (little-endian) |
 | 07-08 | `00 00` | reserved or fixed field |
-| 09-10 | address-like value | likely entry point or execution-related address |
-| 11-15 | `FF FF FF 00 0F` | fixed trailer or loader metadata |
+| 09-10 | address | likely load origin in 256-byte units |
+| 11-15 | `FF FF FF 00 0F` | fixed trailer / loader metadata |
 
-This interpretation is still provisional for some fields, but the body-length field is now strongly confirmed.
-
----
-
-## Entry-point-like field
-
-Bytes 9-10 differ between files:
-
-- PLAY3: `F0 0B`
-- play3_xasm.obj: `F0 0B`
-- YM: `E0 0B`
-- 3D: `E0 0B`
-
-This strongly suggests that bytes 9-10 are an address-related field, most likely:
-
-- execution start address, or
-- machine-language start/load address
-
-The exact semantics still require further validation, but this field is clearly meaningful.
+Some fields remain unknown, but the overall structure is now much clearer.
 
 ---
 
 ## What this means for PLAY3 reconstruction
 
-This comparison changes the interpretation of the previous binary mismatch.
+This comparison narrows the remaining problem significantly.
 
-Earlier it was possible to suspect that `PLAY3` and `play3_xasm.obj` had different outer file container formats.
+The mismatch between `PLAY3` and `play3_xasm.obj` is not caused by a different external file format.
 
-That is now unlikely.
+The following points are now strongly supported:
 
-Instead:
+1. `PLAY3` and `play3_xasm.obj` use the same machine-language file format.
+2. The header length is 16 bytes.
+3. Bytes 5-6 store body size.
+4. Bytes 9-10 likely store the load origin in 256-byte units.
+5. The remaining mismatch is in the machine-code body itself, or in assembler output options affecting body layout.
 
-- `PLAY3` and `play3_xasm.obj` use the same 16-byte machine-language file header format
-- the mismatch is mainly in the machine-code body length and body contents
-
-Therefore the current reconstruction status is:
-
-| Item | Status |
-|------|------|
-| Common real-machine file format identified | confirmed |
-| Header length | confirmed as 16 bytes |
-| Body length field | confirmed |
-| Header-vs-body distinction | confirmed |
-| Full binary identity between PLAY3 and play3_xasm.obj | not yet achieved |
+This is important because it isolates the reconstruction problem to code generation rather than container format.
 
 ---
 
-## Important implication
+## Note on XASM option differences
 
-This means the reconstruction project has already solved one major archival question:
+The current size mismatch is:
 
-> the historical PLAY3 binary and the reconstructed play3_xasm.obj belong to the same external SHARP pocket computer machine-language file format.
+- PLAY3 body: `1360 bytes`
+- play3_xasm.obj body: `1391 bytes`
 
-So the remaining problem is narrower and better defined:
+Difference:
 
-> reconstruct the machine-code body exactly.
+- `31 bytes`
 
-This is much easier to reason about than a mixed “format vs code” problem.
+At this stage, one plausible explanation is that the difference may be caused by assembler output behavior or option selection rather than by a totally different source body.
 
----
-
-## BASIC files
-
-The uploaded BASIC files:
-
-- `BOTTA2.BAS`
-- `HOLY.BAS`
-- `DASH2.BAS`
-
-are plain ASCII BASIC source files and do not use the machine-language binary header format.
-
-They are useful as related program materials, but they do not directly help identify the machine-language header layout.
+This remains a hypothesis and is not yet proven.
 
 ---
 
 ## Conclusion
 
-Comparison with additional real machine-language binaries shows that the PLAY3 file header is not unique.
+Comparison with additional real machine-language binaries shows that the PLAY3 header is part of a common SHARP PC-E500 machine-language binary format.
 
-The following points are now strongly established:
+The strongest conclusions so far are:
 
-1. SHARP PC-E500 machine-language files use a common 16-byte header.
-2. Header bytes 5-6 store the body size in little-endian format.
-3. `PLAY3` and `play3_xasm.obj` use the same file format.
-4. The remaining mismatch is in the machine-code body, not in the outer file header.
+- the file header is 16 bytes long
+- byte 4 is very likely the header-size field
+- bytes 5-6 store body length
+- bytes 9-10 very likely encode the load origin in 256-byte units
+- `PLAY3` and `play3_xasm.obj` share the same outer file format
 
-This is an important step toward a complete reconstruction, because it isolates the remaining problem to exact code recovery rather than file container reproduction.
-
----
-
-## Future work
-
-The next useful step is:
-
-1. analyze the exact meaning of bytes `02-04`
-2. confirm the semantics of bytes `09-10`
-3. compare the body of `PLAY3` and `play3_xasm.obj` in functional sections
-4. determine whether the current reconstructed source is:
-   - an expanded variant,
-   - a corrected/rearranged version,
-   - or still divergent from the historical original
+The next step is to determine whether the remaining body mismatch is caused by source differences or by XASM output options and layout behavior.
