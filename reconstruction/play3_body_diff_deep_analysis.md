@@ -210,6 +210,44 @@ This strongly suggests that the historical source used shorter native opcodes (o
 
 ---
 
+## Confirmed mnemonic conversion error
+
+Further reconstruction work identified a concrete source-conversion error.
+
+The original PLAY3 source used the short native forms:
+
+- `pushu imr`
+- `popu imr`
+
+which assemble to one-byte opcodes:
+
+- `pushu imr` = `2f`
+- `popu imr`  = `3f`
+
+During reconstruction these were incorrectly converted to:
+
+- `pushs imr`
+- `pops imr`
+
+which XASM assembles into longer multi-byte sequences:
+
+- `pushs imr` = `30 e8 37 fb`
+- `pops imr`  = `30 e0 27 fb`
+
+Correcting this conversion reduced the reconstructed code size difference significantly.
+
+After this correction:
+
+- reconstructed code size: 1368 bytes
+- original code size: 1360 bytes
+- remaining difference: +8 bytes
+
+Of this remaining difference, 6 bytes are explained by six `jp` instructions that appear to correspond to shorter `jr` branches in the original source.
+
+This leaves only 2 bytes still unidentified.
+
+---
+
 ## Conclusion
 
 The project has progressed beyond file-format uncertainty.
