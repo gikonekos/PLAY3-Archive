@@ -10,7 +10,8 @@ The program is written for the **PLAY2L buzzer music routine** for the
 
 ## Files
 
-- `BOTTA.BAS` – original BASIC music program
+- `BOTTA.BAS` – original BASIC music program OLD version
+- `BOTTA2.BAS` – original BASIC music program
 
 ---
 
