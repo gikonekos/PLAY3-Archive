@@ -144,3 +144,9 @@ drivers/
 ```
 
 These directories contain technical explanations, translated magazine text, and related driver programs.
+
+## Binary verification
+
+Detailed comparison between the reconstructed binary and the original PLAY3 program:
+
+- [Binary verification report](play3_binary_verification.md)
