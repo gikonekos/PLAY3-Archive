@@ -29,6 +29,7 @@ magazine listings and verifies the result against the historical binary.
 ---
 
 ## Demo
+Tested and verified on **real SHARP PC-E550 hardware**.
 [![PLAY3 demo](https://img.youtube.com/vi/pbo1Mc-6PrA/0.jpg)](https://youtu.be/pbo1Mc-6PrA)
 
 Demonstrations of music playback on the SHARP PC-E500 / PC-E550 pocket computers  
