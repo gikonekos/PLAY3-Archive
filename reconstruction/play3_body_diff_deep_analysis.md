@@ -484,6 +484,16 @@ From a historical reconstruction perspective, the source transcription can now b
 
 ---
 
+Current comparison results strongly suggest that the published PLAY3 source listing and the distributed historical binary are not perfectly identical representations of the same assembled output.
+
+At least part of the remaining difference appears to reflect either:
+1. source-level divergence between the printed listing and the distributed program, or
+2. code-generation differences caused by the original PC-9801/MS-DOS assembly environment.
+
+The `beep_out3` initialization block is the strongest evidence for this discrepancy, because it is clearly present in the printed source but absent at the corresponding location in the original binary.
+
+---
+
 ## Conclusion
 
 The project has progressed beyond file-format uncertainty.
