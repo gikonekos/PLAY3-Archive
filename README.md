@@ -103,12 +103,31 @@ the reconstructed PLAY3 driver.
 
 PLAY-series music driver authors:
 
-- **PLAYX** — Keita Morita
-- **PLAY2 / PLAY2L / PLAY3** — Ryu (Tatsuya Kobayashi / 小林龍也)
+- **PLAYX — Keita Morita (森田敬太)**
+- **PLAY2 / PLAY2L / PLAY3 — Ryu (Tatsuya Kobayashi / 小林龍也)**
 
 Example music in this repository:
 
 - **Kenkichi Motoi (基建吉)**
+
+---
+
+## Research assistance
+
+The reconstruction and analysis of the PLAY3 source code involved
+long-term examination of the original magazine scans, assembler behavior,
+and byte-level comparison with the distributed binary.
+
+Parts of the technical analysis and reconstruction process were assisted
+by AI systems, which were used as research tools during the investigation.
+
+AI systems involved in the research process:
+
+- **Claude (Anthropic)** — scan interpretation, reconstruction assistance, and binary difference analysis
+- **ChatGPT (OpenAI)** — documentation support and technical discussion
+
+All historical verification, source interpretation, and final editorial
+decisions were performed by the repository maintainer.
 
 ---
 
@@ -206,6 +225,19 @@ These observations were obtained during the reconstruction and binary comparison
 Although the project concerns a very niche system — a music driver for the **Sharp PC-E500 pocket computer** — documenting these details contributes to the preservation and understanding of historical pocket computer software.
 
 This project aims to preserve not only the software itself, but also the technical knowledge surrounding early pocket computer development.
+
+---
+
+## Historical note
+
+The reconstruction documented in this repository is based on
+direct examination of the original magazine scans, assembler
+reconstruction using XASM, and byte-level comparison with the
+historical distributed binary.
+
+The goal of this archive is not only to preserve the software,
+but also to document the technical context of pocket computer
+software development in the early 1990s.
 
 ---
 
