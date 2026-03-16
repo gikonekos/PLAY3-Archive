@@ -494,6 +494,27 @@ The `beep_out3` initialization block is the strongest evidence for this discrepa
 
 ---
 
+## Strong evidence of source/binary divergence
+
+Further comparison established that the seven initialization instructions are present twice in the printed source:
+
+1. once in the `main2` section, where they also appear in the original binary, and
+2. again at the start of `beep_out3`, where they appear in the printed listing but not in the distributed binary.
+
+This means the remaining `beep_out3` discrepancy is not an OCR error.
+
+Instead, it strongly suggests that the distributed historical binary does not correspond exactly to the printed source listing at that point.
+
+The most plausible explanations are:
+
+1. the printed source retained a redundant copy that was later removed,
+2. the printed listing was not the final assembled source,
+3. or the distributed binary represents a slightly different revision.
+
+For archival purposes, `play3_pushu.asm` is therefore retained as a scan-faithful reconstruction of the printed source, not as a byte-identical reconstruction of the distributed binary.
+
+---
+
 ## Conclusion
 
 The project has progressed beyond file-format uncertainty.
