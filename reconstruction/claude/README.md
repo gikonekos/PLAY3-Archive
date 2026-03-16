@@ -1,6 +1,8 @@
 # PLAY3 Archive
 
-**PLAY3 Ver1.00** — A 3-voice harmony PLAY command extension for Sharp PC-E500/E550/E650/1480U/1490U(II)/U6000 pocket computers, originally published in **PJ Plaza (PJプラザ)** magazine, August 1993 issue, by **Ryu**.
+**PLAY3** generates three-voice polyphonic music from the internal 1-bit buzzer using software mixing.
+
+**PLAY3 Ver1.00** — A 3-voice harmony PLAY command extension for Sharp PC-E500/E550/E650/1480U/1490U(II)/U6000 pocket computers, originally published in **Pocket Computer Journal (PJ)** magazine, August 1993 issue, by **Ryu**.
 
 This repository preserves the complete assembler source code (XASM format) of PLAY3, reconstructed from magazine scans after over 30 years.
 
