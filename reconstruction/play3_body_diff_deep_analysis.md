@@ -248,6 +248,24 @@ This leaves only 2 bytes still unidentified.
 
 ---
 
+## Major structural mismatch located in `beep_out3`
+
+Section-by-section comparison now shows that most major routines match structurally, including `init1`, `init2`, `main2`, `mml`, `beep_out0`, and `mml_data`.
+
+The remaining large structural difference is concentrated in `beep_out3`.
+
+The reconstructed version includes a 28-byte initialization block at the start of `beep_out3`:
+
+- `mv [partN_coX+1], reg` ×7
+
+but the original binary appears to begin the routine directly at `loop:` without this block.
+
+In addition, the `skip13` delay padding differs by one byte (`nop` count).
+
+This strongly suggests that the current reconstruction has misidentified the true boundary of `beep_out3`, and that the initialization logic may belong to a different location in the original program structure.
+
+---
+
 ## Conclusion
 
 The project has progressed beyond file-format uncertainty.
