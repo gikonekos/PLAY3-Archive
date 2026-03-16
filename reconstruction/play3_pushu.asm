@@ -645,13 +645,12 @@ part3_co4:	mv	y,0
 	jrnz	loop		
 	jr	exit
 	
-skip13:		nop			;2
-	nop			;2
-	nop			;2
-	nop			;2
-	nop			;2
-	nop			;2
-	nop
+skip13:		nop			
+	nop			
+	nop			
+	nop			
+	nop			
+	nop			
 	
 	dec	x		
 	jrnz	loop		
