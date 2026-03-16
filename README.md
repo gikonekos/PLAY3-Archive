@@ -146,3 +146,10 @@ on pocket computers.
 Original software and music remain the property of their respective authors.
 
 This repository is intended as a **historical preservation archive**.
+
+## Related Projects
+
+Other SHARP PC-E500 projects:
+
+- Building Rescue Archive  
+  https://github.com/gikonekos/Building-Rescue-Archive
