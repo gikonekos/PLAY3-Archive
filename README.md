@@ -1,26 +1,42 @@
-A historically verified reconstruction of the PLAY3 three-voice buzzer music driver, including scan-faithful source transcription and byte-level binary comparison.
 # PLAY3 Archive
 
-Archive and reconstruction of the PLAY3 three-voice buzzer music driver for the SHARP PC-E500 / PC-E550 pocket computers (1993)
+Three-voice polyphonic music driver for the **SHARP PC-E500 pocket computer**  
+using a single **1-bit internal piezo buzzer**.
 
-Reconstruction and historical archive of **PLAY3**,  
-a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer series**.
+A historically verified reconstruction of the PLAY3 music driver, including  
+scan-faithful source transcription and byte-level binary comparison.
 
-PLAY3 produces **three-voice polyphonic music from a single 1-bit internal buzzer**
-using software mixing.
+This project preserves both the **original magazine source listing** and a  
+**working reconstructed build verified against the historical binary**.
+
+---
+
+## Overview
+
+PLAY3 is a software music driver for the **SHARP PC-E500 / PC-E550 pocket computer series**.
+
+The driver produces **three-voice polyphonic music** from the machine's  
+single internal buzzer by using precise software timing and rapid  
+time-division switching between notes.
 
 The original program was published in:
 
 **Pocket Computer Journal – November 1993**
 
+This repository reconstructs the original assembler source code from  
+magazine listings and verifies the result against the historical binary.
+
 ---
 
 ## Demo
+[![PLAY3 demo](https://img.youtube.com/vi/pbo1Mc-6PrA/0.jpg)](https://youtu.be/pbo1Mc-6PrA)
 
-Demonstrations of music playback on the SHARP PC-E500 / PC-E550 pocket computers using the PLAY3 software music driver.  
-These videos show reconstructed programs and example songs running on real hardware.
+Demonstrations of music playback on the SHARP PC-E500 / PC-E550 pocket computers  
+using the reconstructed PLAY3 driver.
 
-Watch the full playlist:
+The videos show example music programs running on **real hardware**.
+
+Full playlist:
 
 https://youtube.com/playlist?list=PL0MMNZ2b8g1aup5tHZkTpCn9zczGLA3Rw
 
@@ -28,228 +44,103 @@ https://youtube.com/playlist?list=PL0MMNZ2b8g1aup5tHZkTpCn9zczGLA3Rw
 
 ## System overview
 
-```
-PC-E500 Pocket Computer
-        │
-        │ internal 1-bit piezo buzzer
-        ▼
-PLAY2 / PLAY2L / PLAY3 driver
-        │
-        │ software mixing (time-division multiplexing)
-        ▼
-3-voice polyphonic music
-        │
-        ├─ Dash! (1994 RPG floor BGM)
-        ├─ Holy Night
-        ├─ VEZAR
-        └─ Bottakuri Shouten
-              │
-              ▼
-      Later used in PC-98 game
-      "Space Panicco" (1994)
-```
+PC-E500 Pocket Computer  
+│  
+│ internal 1-bit piezo buzzer  
+▼  
+PLAY2 / PLAY2L / PLAY3 driver  
+│  
+│ software mixing (time-division multiplexing)  
+▼  
+3-voice polyphonic music  
+│  
+├─ Dash! (1994 RPG floor BGM)  
+├─ Holy Night  
+├─ VEZAR  
+└─ Bottakuri Shouten  
+│  
+▼  
+Later used in PC-98 game  
+"Space Panicco" (1994)
+
+PLAY3 belongs to the **PLAY-series buzzer music drivers**, which extend the  
+BASIC PLAY command and allow polyphonic music on the SHARP PC-E500 series.
 
 ---
 
 ## About PLAY3
 
-PLAY3 is a software music routine that generates **three simultaneous voices**
-using the internal piezo buzzer of the SHARP PC-E500 series.
+PLAY3 is a software routine that generates **three simultaneous voices**  
+using the internal piezo buzzer.
 
-Since the hardware only supports a single tone output, the driver rapidly
-switches between notes in a time-division manner, creating the perception
-of polyphonic sound.
+Since the hardware only supports a **single tone output**, the driver rapidly  
+switches between multiple note periods in a time-division manner, creating  
+the perception of polyphonic sound.
 
 ---
 
 ## Repository contents
 
-This repository contains reconstruction material and historical documents
-related to the PLAY3 driver.
-
-```
-analysis/        technical analysis and algorithm notes
-docs/            magazine scans and documentation
-drivers/         related sound driver material
-examples/        example music programs
-reconstruction/  reconstructed XASM source code
-```
-
----
-
-## Example music
-
-The `examples` directory contains original music programs written for the
-PLAY-series buzzer drivers.
-
-Included examples:
-
-- **VEZAR** – demonstration program
-- **Dash!** – RPG floor BGM (1994)
-- **Holy Night** – Silent Night arrangement
-- **Bottakuri Shouten** – early music later used in the PC-98 game  
-  *Space Panicco (すぺーすぱにっ娘)*
-
-These programs illustrate how music was composed for buzzer-based
-polyphonic drivers on pocket computers.
-
-Some example music programs originate from the 1990s,
-while others were newly created in 2025 to demonstrate
-the reconstructed PLAY3 driver.
+analysis/ — technical analysis and algorithm notes  
+docs/ — magazine scans and documentation  
+drivers/ — related sound driver material  
+examples/ — example music programs  
+reconstruction/ — reconstructed XASM source code
 
 ---
 
 ## Authors
 
-PLAY-series music driver authors:
+PLAYX — Keita Morita (森田敬太)  
+PLAY2 / PLAY2L / PLAY3 — Ryu (Tatsuya Kobayashi / 小林龍也)
 
-- **PLAYX — Keita Morita (森田敬太)**
-- **PLAY2 / PLAY2L / PLAY3 — Ryu (Tatsuya Kobayashi / 小林龍也)**
+Example music:
 
-Example music in this repository:
+Kenkichi Motoi (基建吉)
 
-- **Kenkichi Motoi (基建吉)**
+---
+
+## Binary comparison
+
+original body size : 1360 bytes  
+reconstructed build : 1369 bytes  
+difference : +9 bytes
+
+Remaining difference explained by:
+
+mml_conv routine difference : −11 bytes  
+beep_out3 initialization block : +28 bytes  
+trailing binary padding : −8 bytes  
+
+Total difference: **+9 bytes**
 
 ---
 
 ## Research assistance
 
-The reconstruction and analysis of the PLAY3 source code involved
-long-term examination of the original magazine scans, assembler behavior,
-and byte-level comparison with the distributed binary.
+Parts of the reconstruction were assisted by AI systems used as research tools.
 
-Parts of the technical analysis and reconstruction process were assisted
-by AI systems, which were used as research tools during the investigation.
+Claude (Anthropic)  
+ChatGPT (OpenAI)
 
-AI systems involved in the research process:
-
-- **Claude (Anthropic)** — scan interpretation, reconstruction assistance, and binary difference analysis
-- **ChatGPT (OpenAI)** — documentation support and technical discussion
-
-All historical verification, source interpretation, and final editorial
-decisions were performed by the repository maintainer.
-
----
-
-## Historical context
-
-Some example programs document music that later appeared in
-**PC-98 MS-DOS games**, illustrating the relationship between
-pocket computer music and early Japanese PC game soundtracks.
-
-For example:
-
-**"Bottakuri Shouten" (1994-05-11)**  
-was later used as background music in the PC-9801 game:
-
-**Space Panicco (すぺーすぱにっ娘)**  
-Released: **1994-09-20**
+Final verification and editorial decisions were performed by the repository maintainer.
 
 ---
 
 ## Purpose of this archive
 
-This project aims to preserve:
+This project preserves:
 
-- the original magazine publication
-- reconstructed XASM source code
-- working example music programs
-- technical analysis of the driver
+original magazine publication  
+reconstructed XASM source code  
+example music programs  
+technical analysis of the driver
 
-as historical documentation of **buzzer-based polyphonic music systems**
-on pocket computers.
-
----
-
-## Reconstruction status
-
-The PLAY3 source code in this repository has been reconstructed from the
-original magazine listing and verified against the scanned pages.
-
-A byte-by-byte comparison was performed between the reconstructed XASM build
-and the historical binary distributed with the magazine.
-
-Results:
-
-original body size   : 1360 bytes  
-reconstructed build  : 1369 bytes  
-difference           : +9 bytes  
-
-Detailed analysis shows that the remaining difference is explained by three
-independent factors:
-
-- mml_conv routine difference     : -11 bytes
-- beep_out3 initialization block  : +28 bytes
-- trailing binary padding         : -8 bytes
-
-Total difference: **+9 bytes**
-
-The most significant discrepancy is the initialization block at the start
-of `beep_out3`.
-
-The printed source listing includes seven initialization instructions inside
-the `beep_out3` routine, but the distributed historical binary begins the
-routine directly with `dec ba`.
-
-However, the same initialization sequence already exists earlier in the
-`main2` routine and is present in both the printed source and the binary.
-
-This strongly suggests that the printed listing and the distributed binary
-represent slightly different revisions of the program, or that redundant
-initialization code was removed in the distributed build.
-
-For this reason:
-
-- `play3_photo.asm` preserves the **scan-faithful transcription** of the magazine source listing
-- `play3_pushu.asm` provides an **XASM-compatible reconstruction** of that printed source
-
-The repository therefore preserves both the historical source listing and
-the technical analysis of its relationship to the distributed binary.
+as documentation of **buzzer-based polyphonic music systems** on pocket computers.
 
 ---
 
-## Technical findings from the reconstruction
+## Related projects
 
-The reconstruction process revealed several technical details that may be useful for future research on the SC62015 architecture and XASM assembler.
-
-- **XASM Ver.1.40 does not generate an object file unless the `-O` flag is specified.**
-
-- **`pushu imr` on the SC62015 corresponds to the single-byte opcode `0x2f`.**
-
-- **The `local` / `endl` scope mechanism in XASM correctly resolves self-referencing addresses.**
-
-- **When the printed magazine source and the distributed binary correspond to different revisions of the program, a perfect byte-for-byte match cannot be achieved.**
-
-These observations were obtained during the reconstruction and binary comparison of the PLAY3 music driver.
-
-Although the project concerns a very niche system — a music driver for the **Sharp PC-E500 pocket computer** — documenting these details contributes to the preservation and understanding of historical pocket computer software.
-
-This project aims to preserve not only the software itself, but also the technical knowledge surrounding early pocket computer development.
-
----
-
-## Historical note
-
-The reconstruction documented in this repository is based on
-direct examination of the original magazine scans, assembler
-reconstruction using XASM, and byte-level comparison with the
-historical distributed binary.
-
-The goal of this archive is not only to preserve the software,
-but also to document the technical context of pocket computer
-software development in the early 1990s.
-
----
-
-## License
-
-Original software and music remain the property of their respective authors.
-
-This repository is intended as a **historical preservation archive**.
-
-## Related Projects
-
-Other SHARP PC-E500 projects:
-
-- Building Rescue Archive  
-  https://github.com/gikonekos/Building-Rescue-Archive
+Building Rescue Archive  
+https://github.com/gikonekos/Building-Rescue-Archive
