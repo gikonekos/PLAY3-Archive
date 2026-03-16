@@ -189,6 +189,26 @@ the technical analysis of its relationship to the distributed binary.
 
 ---
 
+## Technical findings from the reconstruction
+
+The reconstruction process revealed several technical details that may be useful for future research on the SC62015 architecture and XASM assembler.
+
+- **XASM Ver.1.40 does not generate an object file unless the `-O` flag is specified.**
+
+- **`pushu imr` on the SC62015 corresponds to the single-byte opcode `0x2f`.**
+
+- **The `local` / `endl` scope mechanism in XASM correctly resolves self-referencing addresses.**
+
+- **When the printed magazine source and the distributed binary correspond to different revisions of the program, a perfect byte-for-byte match cannot be achieved.**
+
+These observations were obtained during the reconstruction and binary comparison of the PLAY3 music driver.
+
+Although the project concerns a very niche system — a music driver for the **Sharp PC-E500 pocket computer** — documenting these details contributes to the preservation and understanding of historical pocket computer software.
+
+This project aims to preserve not only the software itself, but also the technical knowledge surrounding early pocket computer development.
+
+---
+
 ## License
 
 Original software and music remain the property of their respective authors.
