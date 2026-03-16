@@ -264,6 +264,10 @@ In addition, the `skip13` delay padding differs by one byte (`nop` count).
 
 This strongly suggests that the current reconstruction has misidentified the true boundary of `beep_out3`, and that the initialization logic may belong to a different location in the original program structure.
 
+This suggests that the reconstruction process likely absorbed
+a separate initialization sequence into the `beep_out3` routine,
+resulting in a misidentified routine boundary.
+
 ---
 
 ## Conclusion
