@@ -270,6 +270,220 @@ resulting in a misidentified routine boundary.
 
 ---
 
+## Final byte-level comparison results
+
+After verifying the scanned source listing and reconstructing the XASM-compatible source,  
+a byte-by-byte comparison was performed between:
+
+- the original PLAY3 binary extracted from the magazine distribution
+- the newly assembled `play3_pushu.asm`
+
+Fresh assembly was confirmed using the `-O` output flag to ensure that the object file was regenerated.
+
+### Binary sizes
+
+| Item | Size |
+|-----|------|
+| Original body | 1360 bytes |
+| Reconstructed body | 1369 bytes |
+| Difference | +9 bytes |
+
+First mismatch occurs at:
+
+```
+offset = 0x0022
+orig = 0xFA
+ours = 0xEF
+```
+
+---
+
+# Detailed difference breakdown
+
+The remaining **+9 bytes** can be fully explained by three independent sources.
+
+---
+
+# 1. `mml_conv` structural difference (-11 bytes)
+
+Three sub-regions in the `mml_conv` routine differ between the original binary and the reconstructed XASM output.
+
+### DIFF 1A – `mml_conv_lp` entry structure (-6B)
+
+Address range:
+
+```
+orig  0xbf091 – 0xbf0c7  (55 bytes)
+ours  0xbf091 – 0xbf0c1  (49 bytes)
+```
+
+Bytes present only in the original:
+
+```
+90 24    mv  a,[x++]
+60 22    cmp a,'"'
+18 8f    jrz +0x8f
+```
+
+These correspond to the original loop entry sequence for `mml_conv_lp`.
+
+The reconstructed source uses a slightly different control flow structure due to XASM label handling.
+
+---
+
+### DIFF 1B – internal instruction encoding (-1B)
+
+Address range:
+
+```
+orig  0xbf0c8 – 0xbf123
+ours  0xbf0c2 – 0xbf11c
+```
+
+This region contains several encoding differences (including the branch around `jp@0xbf10a`).
+
+Individual differences cancel each other out, producing a net size difference of:
+
+```
+-1 byte
+```
+
+---
+
+### DIFF 1C – later part of `mml_conv` (-4B)
+
+Address range:
+
+```
+orig  0xbf124 – 0xbf1f9  (214 bytes)
+ours  0xbf11d – 0xbf1ee  (210 bytes)
+```
+
+Observed causes:
+
+```
+extra jp instructions in reconstruction: +3B
+shorter instruction encodings elsewhere: -7B
+---------------------------------------------
+net result: -4B
+```
+
+---
+
+### Total `mml_conv` difference
+
+```
+DIFF 1A  -6B
+DIFF 1B  -1B
+DIFF 1C  -4B
+----------------
+TOTAL   -11B
+```
+
+---
+
+# 2. `beep_out3` initialization block (+28 bytes)
+
+Address range:
+
+```
+0xbf3e4 – 0xbf3ff
+```
+
+Bytes present only in the reconstructed binary:
+
+```
+aa 05 f4 0b  mv [0xbf405], ba
+ab 10 f4 0b  mv [0xbf410], i
+ab 50 f4 0b  mv [0xbf450], i
+ad 17 f4 0b  mv [0xbf417], y
+ad 38 f4 0b  mv [0xbf438], y
+ad 57 f4 0b  mv [0xbf457], y
+ad 6b f4 0b  mv [0xbf46b], y
+```
+
+These correspond exactly to the seven initialization instructions printed in the magazine listing:
+
+```
+beep_out3:  local
+
+    mv [part1_co1+1],ba
+    mv [part2_co1+1],i
+    mv [part2_co2+1],i
+    mv [part3_co1+1],y
+    mv [part3_co2+1],y
+    mv [part3_co3+1],y
+    mv [part3_co4+1],y
+```
+
+The scans clearly confirm these instructions (magazine lines 584–590).
+
+However, the original binary begins directly with:
+
+```
+dec ba
+```
+
+Therefore this **28-byte block appears only in the printed source**, not in the distributed binary.
+
+Possible explanations include:
+
+- a difference between the printed listing and the distributed program
+- conditional assembly in the original environment
+- or assembler/linker output differences.
+
+---
+
+# 3. Trailing zero padding in the original binary (-8 bytes)
+
+At the end of the original program, the following padding appears:
+
+```
+00 00 00 00 00 00 00 00
+```
+
+This block exists in the original binary but is not emitted by XASM.
+
+Important observations:
+
+- all declared variables in `length_data+` match exactly (61 bytes)
+- the extra 8 bytes are **not associated with any printed declaration**
+
+Therefore this padding most likely originates from:
+
+- assembler alignment
+- linker behavior
+- or implicit segment padding in the original PC-9801/MS-DOS toolchain.
+
+---
+
+# Final size equation
+
+```
+mml_conv structural difference     -11B
+beep_out3 initialization block     +28B
+trailing padding                   -8B
+---------------------------------------
+TOTAL                               +9B
+```
+
+---
+
+# Reconstruction status
+
+The printed PLAY3 source listing has now been fully verified against the magazine scans.
+
+The remaining **+9 byte difference** is no longer attributable to OCR or transcription errors.  
+Instead, it results from differences between:
+
+1. the printed source listing,
+2. the original PC-9801/MS-DOS assembly environment,
+3. and the modern XASM reconstruction workflow.
+
+From a historical reconstruction perspective, the source transcription can now be considered **scan-verified**.
+
+---
+
 ## Conclusion
 
 The project has progressed beyond file-format uncertainty.
