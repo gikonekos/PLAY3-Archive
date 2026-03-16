@@ -1,3 +1,4 @@
+A historically verified reconstruction of the PLAY3 three-voice buzzer music driver, including scan-faithful source transcription and byte-level binary comparison.
 # PLAY3 Archive
 
 Archive and reconstruction of the PLAY3 three-voice buzzer music driver for the SHARP PC-E500 / PC-E550 pocket computers (1993)
@@ -138,6 +139,53 @@ This project aims to preserve:
 
 as historical documentation of **buzzer-based polyphonic music systems**
 on pocket computers.
+
+---
+
+## Reconstruction status
+
+The PLAY3 source code in this repository has been reconstructed from the
+original magazine listing and verified against the scanned pages.
+
+A byte-by-byte comparison was performed between the reconstructed XASM build
+and the historical binary distributed with the magazine.
+
+Results:
+
+original body size   : 1360 bytes  
+reconstructed build  : 1369 bytes  
+difference           : +9 bytes  
+
+Detailed analysis shows that the remaining difference is explained by three
+independent factors:
+
+- mml_conv routine difference     : -11 bytes
+- beep_out3 initialization block  : +28 bytes
+- trailing binary padding         : -8 bytes
+
+Total difference: **+9 bytes**
+
+The most significant discrepancy is the initialization block at the start
+of `beep_out3`.
+
+The printed source listing includes seven initialization instructions inside
+the `beep_out3` routine, but the distributed historical binary begins the
+routine directly with `dec ba`.
+
+However, the same initialization sequence already exists earlier in the
+`main2` routine and is present in both the printed source and the binary.
+
+This strongly suggests that the printed listing and the distributed binary
+represent slightly different revisions of the program, or that redundant
+initialization code was removed in the distributed build.
+
+For this reason:
+
+- `play3_photo.asm` preserves the **scan-faithful transcription** of the magazine source listing
+- `play3_pushu.asm` provides an **XASM-compatible reconstruction** of that printed source
+
+The repository therefore preserves both the historical source listing and
+the technical analysis of its relationship to the distributed binary.
 
 ---
 
