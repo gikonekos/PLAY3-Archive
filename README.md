@@ -1,35 +1,43 @@
 # PLAY3 Archive
 
-Three-voice polyphonic music driver for the **SHARP PC-E500 pocket computer**  
-using a single **1-bit internal piezo buzzer**.
+Reconstruction and historical archive of **PLAY3**,  
+a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer series**.
 
-A historically verified reconstruction of the PLAY3 music driver, including  
-scan-faithful source transcription and byte-level binary comparison.
+PLAY3 produces **three-voice polyphonic music from a single 1-bit internal buzzer**  
+using a software mixing technique.
 
-This project preserves both the **original magazine source listing** and a  
-**working reconstructed build verified against the historical binary**.
+Originally published in:
+
+Pocket Computer Journal — November 1993
+
+This repository preserves both:
+
+- the **original magazine source listing**
+- a **verified reconstructed assembly build**
 
 ---
 
-## Overview
+# Overview
 
 PLAY3 is a software music driver for the **SHARP PC-E500 / PC-E550 pocket computer series**.
 
 The driver produces **three-voice polyphonic music** from the machine's  
-single internal buzzer by using precise software timing and rapid  
+single internal buzzer by using precise CPU timing and rapid  
 time-division switching between notes.
 
 The original program was published in:
 
-**Pocket Computer Journal – November 1993**
+Pocket Computer Journal – November 1993
 
 This repository reconstructs the original assembler source code from  
 magazine listings and verifies the result against the historical binary.
 
 ---
 
-## Demo
+# Demo
+
 Tested and verified on **real SHARP PC-E550 hardware**.
+
 [![PLAY3 demo](https://img.youtube.com/vi/pbo1Mc-6PrA/0.jpg)](https://youtu.be/pbo1Mc-6PrA)
 
 Demonstrations of music playback on the SHARP PC-E500 / PC-E550 pocket computers  
@@ -43,33 +51,35 @@ https://youtube.com/playlist?list=PL0MMNZ2b8g1aup5tHZkTpCn9zczGLA3Rw
 
 ---
 
-## System overview
+# System overview
 
 PC-E500 Pocket Computer  
-│  
-│ internal 1-bit piezo buzzer  
-▼  
+↓  
+internal 1-bit piezo buzzer  
+↓  
 PLAY2 / PLAY2L / PLAY3 driver  
-│  
-│ software mixing (time-division multiplexing)  
-▼  
-3-voice polyphonic music  
-│  
-├─ Dash! (1994 RPG floor BGM)  
-├─ Holy Night  
-├─ VEZAR  
-└─ Bottakuri Shouten  
-│  
-▼  
-Later used in PC-98 game  
-"Space Panicco" (1994)
+↓  
+software mixing (time-division multiplexing)  
+↓  
+3-voice polyphonic music
+
+Example usage:
+
+- Dash! (1994 RPG floor BGM)
+- Holy Night
+- VEZAR
+- Bottakuri Shouten
+
+Later used in the PC-98 game:
+
+Space Panicco (1994)
 
 PLAY3 belongs to the **PLAY-series buzzer music drivers**, which extend the  
 BASIC PLAY command and allow polyphonic music on the SHARP PC-E500 series.
 
 ---
 
-## About PLAY3
+# About PLAY3
 
 PLAY3 is a software routine that generates **three simultaneous voices**  
 using the internal piezo buzzer.
@@ -78,30 +88,49 @@ Since the hardware only supports a **single tone output**, the driver rapidly
 switches between multiple note periods in a time-division manner, creating  
 the perception of polyphonic sound.
 
----
-
-## Repository contents
-
-analysis/ — technical analysis and algorithm notes  
-docs/ — magazine scans and documentation  
-drivers/ — related sound driver material  
-examples/ — example music programs  
-reconstruction/ — reconstructed XASM source code
+This technique represents a form of **software sound synthesis** commonly  
+used in Japanese pocket computer programming during the early 1990s.
 
 ---
 
-## Authors
+# Repository contents
 
-PLAYX — Keita Morita (森田敬太)  
-PLAY2 / PLAY2L / PLAY3 — Ryu (Tatsuya Kobayashi / 小林龍也)
+analysis/  
+technical analysis and algorithm notes
 
-Example music:
+docs/  
+magazine scans and documentation
+
+drivers/  
+related sound driver material
+
+examples/  
+example music programs
+
+reconstruction/  
+reconstructed assembly source code
+
+work/  
+development workspace containing intermediate files, experiments,  
+and auxiliary materials used during the reconstruction process
+
+---
+
+# Authors
+
+PLAYX  
+Keita Morita (森田敬太)
+
+PLAY2 / PLAY2L / PLAY3  
+Ryu (Tatsuya Kobayashi / 小林龍也)
+
+Example music
 
 Kenkichi Motoi (基建吉)
 
 ---
 
-## Binary comparison
+# Binary comparison
 
 original body size : 1360 bytes  
 reconstructed build : 1369 bytes  
@@ -113,11 +142,11 @@ mml_conv routine difference : −11 bytes
 beep_out3 initialization block : +28 bytes  
 trailing binary padding : −8 bytes  
 
-Total difference: **+9 bytes**
+Total difference : **+9 bytes**
 
 ---
 
-## Research assistance
+# Research assistance
 
 Parts of the reconstruction were assisted by AI systems used as research tools.
 
@@ -128,20 +157,20 @@ Final verification and editorial decisions were performed by the repository main
 
 ---
 
-## Purpose of this archive
+# Purpose of this archive
 
 This project preserves:
 
-original magazine publication  
-reconstructed XASM source code  
-example music programs  
-technical analysis of the driver
+- original magazine publication
+- reconstructed XASM source code
+- example music programs
+- technical analysis of the driver
 
 as documentation of **buzzer-based polyphonic music systems** on pocket computers.
 
 ---
 
-## Related projects
+# Related projects
 
 Building Rescue Archive  
 https://github.com/gikonekos/Building-Rescue-Archive
