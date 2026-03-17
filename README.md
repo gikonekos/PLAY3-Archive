@@ -76,9 +76,9 @@ Example usage:
 - VEZAR
 - Bottakuri Shouten
 
-**Bottakuri Shouten*** Later used in the PC-98 game:
+**Bottakuri Shouten** Later used in the PC-98 game:
 
-Space Panicco (1994)
+**Space Panicco** (1994)
 
 PLAY3 belongs to the **PLAY-series buzzer music drivers**, which extend the  
 BASIC PLAY command and allow polyphonic music on the SHARP PC-E500 series.
