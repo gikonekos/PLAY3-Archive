@@ -67,6 +67,7 @@ Example usage:
 
 - Dash! (1994 RPG floor BGM)
 - Holy Night
+- SAMPLE
 - VEZAR
 - Bottakuri Shouten
 
@@ -93,26 +94,28 @@ used in Japanese pocket computer programming during the early 1990s.
 
 ---
 
-# Repository contents
+# Repository structure
 
-analysis/  
-technical analysis and algorithm notes
-
-docs/  
-magazine scans and documentation
-
-drivers/  
-related sound driver material
-
-examples/  
-example music programs
-
-reconstruction/  
-reconstructed assembly source code
-
-work/  
-development workspace containing intermediate files, experiments,  
-and auxiliary materials used during the reconstruction process
+```
+PLAY3-Archive
+│
+├─ analysis/
+│
+├─ docs/
+│
+├─ drivers/
+│
+├─ examples/
+│   ├─ VEZAR/
+│   ├─ botta/
+│   ├─ dash/
+│   ├─ holy/
+│   └─ sample/
+│
+├─ reconstruction/
+│
+└─ work/
+```
 
 ---
 
@@ -124,9 +127,23 @@ Keita Morita (森田敬太)
 PLAY2 / PLAY2L / PLAY3  
 Ryu (Tatsuya Kobayashi / 小林龍也)
 
-Example music
+Project archive and reconstruction and examples
 
 Kenkichi Motoi (基建吉)
+
+---
+
+# Original sample music
+
+Original sample music (1993)
+
+- SAMPLE.bas — Kazusumi Matsuki (松樹一純)
+
+Later music using PLAY-series drivers
+
+- Dash!
+- VEZAR
+- Bottakuri Shouten
 
 ---
 
@@ -167,6 +184,36 @@ This project preserves:
 - technical analysis of the driver
 
 as documentation of **buzzer-based polyphonic music systems** on pocket computers.
+
+---
+
+# Historical significance
+
+During the late 1980s and early 1990s, Japanese pocket computers such as the  
+SHARP PC-E500 were widely used by hobbyist programmers and magazine readers.
+
+Because these machines only provided a **single 1-bit internal buzzer**,  
+polyphonic music was normally impossible on the hardware.
+
+Drivers such as **PLAY2 / PLAY2L / PLAY3** solved this limitation by using  
+precise CPU timing and rapid time-division switching between note periods,  
+creating the perception of multiple simultaneous voices.
+
+This technique represents an early form of **software sound synthesis** on  
+limited hardware, similar in spirit to software audio techniques used on  
+other contemporary systems.
+
+Programs like PLAY3 illustrate an important aspect of the Japanese  
+microcomputer hobbyist culture of the period:
+
+- magazine-published program listings
+- reader reconstruction and experimentation
+- creative techniques to overcome hardware limitations
+
+By reconstructing and verifying the original assembler source code,  
+this archive preserves both the **technical implementation** and the  
+**historical context** of buzzer-based polyphonic music systems on  
+Japanese pocket computers.
 
 ---
 
