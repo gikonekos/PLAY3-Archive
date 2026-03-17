@@ -76,7 +76,7 @@ Example usage:
 - VEZAR
 - Bottakuri Shouten
 
-Later used in the PC-98 game:
+**Bottakuri Shouten*** Later used in the PC-98 game:
 
 Space Panicco (1994)
 
@@ -148,6 +148,7 @@ Later music using PLAY-series drivers
 
 - Dash!
 - VEZAR
+- Holy Night
 - Bottakuri Shouten
 
 ---
