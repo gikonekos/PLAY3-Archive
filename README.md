@@ -76,9 +76,10 @@ Example usage:
 - VEZAR
 - Bottakuri Shouten
 
-**Bottakuri Shouten** Later used in the PC-98 game:
+**Bottakuri Shouten** was later used as background music in the PC-98 game:
 
-**Space Panicco** (1994)
+**Space Panicco (1994)**  
+https://github.com/gikonekos/Space-Panicco-Archive
 
 PLAY3 belongs to the **PLAY-series buzzer music drivers**, which extend the  
 BASIC PLAY command and allow polyphonic music on the SHARP PC-E500 series.
@@ -243,5 +244,10 @@ Initial public archive release of PLAY3.
 
 # Related projects
 
-Building Rescue Archive  
+**Building Rescue Archive**
 https://github.com/gikonekos/Building-Rescue-Archive
+
+**Space Panicco Archive**  
+https://github.com/gikonekos/Space-Panicco-Archive
+
+
