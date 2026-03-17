@@ -1,6 +1,9 @@
-A reconstruction and preservation project of the PLAY3 buzzer music driver
-published in Pocket Computer Journal (1993).
+A reconstruction and preservation project of the **PLAY3** buzzer music driver
+originally published in **Pocket Computer Journal (1993)**.
+
 # PLAY3 Archive
+
+**3-voice music from a single 1-bit buzzer on the SHARP PC-E500 (1993).**
 
 Reconstruction and historical archive of **PLAY3**,  
 a three-voice buzzer music driver for the **SHARP PC-E500 pocket computer series**.
@@ -129,7 +132,7 @@ Keita Morita (森田敬太)
 PLAY2 / PLAY2L / PLAY3  
 Ryu (Tatsuya Kobayashi / 小林龍也)
 
-Project archive and reconstruction and examples
+Project archive, and reconstruction, and examples
 
 Kenkichi Motoi (基建吉)
 
@@ -151,7 +154,7 @@ Later music using PLAY-series drivers
 
 # Binary comparison
 
-original body size : 1360 bytes  
+original binary size : 1360 bytes  
 reconstructed build : 1369 bytes  
 difference : +9 bytes
 
@@ -216,6 +219,24 @@ By reconstructing and verifying the original assembler source code,
 this archive preserves both the **technical implementation** and the  
 **historical context** of buzzer-based polyphonic music systems on  
 Japanese pocket computers.
+
+---
+
+## Release History
+
+### v1.1
+Expanded reconstruction and documentation.
+
+- OCR reconstruction of the original assembly source
+- Binary comparison with the original program
+- Restoration of Japanese comments and English translation
+- Technical analysis of the PLAY3 driver
+- Magazine article transcription (Japanese / English)
+- OCR reconstruction of the example music program
+- Real hardware demonstration videos
+
+### v1.0
+Initial public archive release of PLAY3.
 
 ---
 
