@@ -1,3 +1,5 @@
+A reconstruction and preservation project of the PLAY3 buzzer music driver
+published in Pocket Computer Journal (1993).
 # PLAY3 Archive
 
 Reconstruction and historical archive of **PLAY3**,  
