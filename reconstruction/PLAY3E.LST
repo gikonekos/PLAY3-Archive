@@ -1,0 +1,704 @@
+000000                   	; ============================================================
+000000                   	; PLAY3 - SHARP PC-E500 3-voice buzzer music driver
+000000                   	; Published in Pocket Computer Journal 1993  Author: Ryu
+000000                   	; English-commented source (based on play3_pushu.asm)
+000000                   	; ============================================================
+000000                   		pre_on				; Assembler pre-processing directive
+000000                   	; --- System entry points ---
+000000                   	fcs:		equ	0fffe4h		; File Control System entry
+000000                   	iocs:		equ	0fffe8h		; I/O Control System entry
+000000                   	; --- Interrupt vector addresses ---
+000000                   	vect0:		equ	0bfcc6h		; Interrupt vector 0
+000000                   	vect1:		equ	0bfcc9h		; Interrupt vector 1
+000000                   	vect2:		equ	0bfccch		; Interrupt vector 2
+000000                   	vect3:		equ	0bfccfh		; Interrupt vector 3
+000000                   	vect4:		equ	0bfcd2h		; Interrupt vector 4
+000000                   	vect5:		equ	0bfcd5h		; Interrupt vector 5
+000000                   	vect6:		equ	0bfcd8h		; Interrupt vector 6
+000000                   	vect7:		equ	0bfcdbh		; Interrupt vector 7
+000000                   	; --- Internal RAM register alias definitions ---
+000000                   	bx:		equ	0d4h		; BX register address
+000000                   	bh:		equ	0d5h		; BH register address
+000000                   	cx:		equ	0d6h		; CX register address
+000000                   	ch:		equ	0d7h		; CH register address
+000000                   	dx:		equ	0d8h		; DX register address
+000000                   	dh:		equ	0d9h		; DH register address
+000000                   	si:		equ	0dah		; SI register address
+000000                   	di:		equ	0ddh		; DI register address
+000000                   	; --- Pointer registers ---
+000000                   	abp:		equ	0ech		; ABP pointer
+000000                   	apx:		equ	0edh		; APX pointer
+000000                   	apy:		equ	0eeh		; APY pointer
+000000                   	; --- Interrupt control registers ---
+000000                   	iisr:		equ	0ebh		; Interrupt service register
+000000                   	imr:		equ	0fbh		; Interrupt mask register
+000000                   	isr:		equ	0fch		; Interrupt status register
+000000                   	; --- Hardware registers / BASIC workspace ---
+000000                   	beep:		equ	0fdh		; Buzzer control register
+000000                   	basic_work:	equ	0d1h		; BASIC workspace base address
+000000                   	cr:		equ	00dh		; Carriage return character code
+000000                   	; --- Part data structure offset definitions ---
+000000                   	part_c:		equ	0		; Part counter (zero-page work area)
+000000                   	data_adr:	equ	0		; Current data address offset
+000000                   	data_s_adr:	equ	data_adr+3	; Start data address offset
+000000                   	oct:		equ	data_s_adr+3	; Octave value offset
+000000                   	onp:		equ	oct+1		; Note code offset
+000000                   	l_count:	equ	onp+1		; Length counter offset
+000000                   	o_count:	equ	l_count+1	; Pitch counter offset
+000000                   	; --- MML parser internal RAM constants ---
+000000                   	oct_flg:	equ	13h		; Temporary octave change flag address
+000000                   	octerve_adr:	equ	30h		; Octave data pointer storage address
+000000                   	length_adr:	equ	33h		; Note length data pointer storage address
+000000                   	e_flg:		equ	18h		; End flag address
+0BF000                   		org	0bf000h			; Load address: 0BF000h
+0BF000                   	; ============================================================
+0BF000                   	; install / remove - BASIC command registration and removal
+0BF000                   	; ============================================================
+0BF000                   	install:	local			; Begin local scope
+0BF000 0C 26 F0 0B       		mv	x,basic_command		; Command table start address -> X
+0BF004 30 BC 80 D1 90    		mv	[(!basic_work)+90h],x	; Register in BASIC command table pointer
+0BF009 0C 35 F0 0B       		mv	x,basic_code		; Command code table address -> X
+0BF00D 30 BC 80 D1 93    		mv	[(!basic_work)+93h],x	; Register in BASIC code table pointer
+0BF012 07                		retf				; Far return
+0BF013 0C FF FF 0F       	remove:		mv	x,0fffffh	; Invalid address (for command removal)
+0BF017 30 BC 80 D1 90    		mv	[(!basic_work)+90h],x	; Clear command table pointer
+0BF01C 30 BC 80 D1 93    		mv	[(!basic_work)+93h],x	; Clear code table pointer
+0BF021 05 EF F1 0B       		callf	!init1			; Initialize playback state
+0BF025 07                		retf				; Far return
+0BF026                   	; ============================================================
+0BF026                   	; BASIC command table definition
+0BF026                   	; Registers PLAY command and EXOFF command
+0BF026                   	; ============================================================
+0BF026 04                	basic_command:	db	04h		; Number of command characters (4)
+0BF027 50 4C 41 59       		dm	'PLAY'			; Command name string
+0BF02B 1F                		db	1fh			; Intermediate code
+0BF02C 05                		db	5			; Next command character count (5)
+0BF02D 45 58 4F 46 46    		dm	'EXOFF'			; Command name string
+0BF032 02                		db	2			; Code length
+0BF033 00 00             		db	0,0			; Terminator
+0BF035 1F                	basic_code:	db	1fh		; Code flag
+0BF036 3F F0             		dw	!entry			; PLAY command handler address
+0BF038 8B                		db	8bh			; Attribute byte (bit6=1, bit7=1)
+0BF039 02                		db	2			; Code length
+0BF03A 13 F0             		dw	remove			; EXOFF command handler address
+0BF03C 8B                		db	8bh			; Attribute byte
+0BF03D 00 00             		db	0,0			; Terminator
+0BF03F                   		endl				; End local scope
+0BF03F                   	; ============================================================
+0BF03F                   	; entry - PLAY command entry point
+0BF03F                   	; Disables interrupts, runs MML parsing/playback, then restores state
+0BF03F                   	; ============================================================
+0BF03F                   	entry:		local			; Begin local scope
+0BF03F 2F                		pushu imr			; Save interrupt mask register onto stack
+0BF040 30 CC FB A0       		mv	(!imr),0a0h		; Set interrupt mask (disable all but timer)
+0BF044 30 E8 36 EC       		mv	[--u],(!abp)		; Save ABP pointer onto stack
+0BF048 04 57 F0          		call	mml_conv		; Call MML string parsing routine
+0BF04B 2C                		pushu	x			; Save X register
+0BF04C 05 0E F2 0B       		callf	!init2			; Call playback init and main loop
+0BF050 3C                		popu	x			; Restore X register
+0BF051 30 E0 26 EC       		mv	(!abp),[u++]		; Restore ABP pointer
+0BF055 3F                		popu imr			; Restore interrupt mask register
+0BF056 07                		retf				; Far return (back to BASIC)
+0BF057                   	; ============================================================
+0BF057                   	; mml_conv - MML string parsing routine
+0BF057                   	; X: MML string pointer
+0BF057                   	; Parses the MML string and builds playback data buffers for each part
+0BF057                   	; ============================================================
+0BF057 0D E3 F1 0B       	mml_conv:	mv	y,octerve	; Default octave data address -> Y
+0BF05B 30 A5 30          		mv	(!octerve_adr),y	; Store octave pointer in internal RAM
+0BF05E 0D E4 F1 0B       		mv	y,length		; Default note length data address -> Y
+0BF062 30 A5 33          		mv	(!length_adr),y		; Store length pointer in internal RAM
+0BF065 0D 29 F5 0B       		mv	y,!part1+!data_s_adr	; Part 1 data start address -> Y
+0BF069 AD E9 F1 0B       		mv	[MML_data_adr],y	; Save MML data write address
+0BF06D 0D E2 F1 0B       		mv	y,not_data		; Terminator data address -> Y
+0BF071 AD 49 F5 0B       		mv	[!part3+!data_s_adr],y	; Initialize part 3 data address to terminator
+0BF075 AD 39 F5 0B       		mv	[!part2+!data_s_adr],y	; Initialize part 2 data address to terminator
+0BF079 0D 57 F5 0B       		mv	y,!data_buff		; Data buffer address -> Y
+0BF07D AD 29 F5 0B       		mv	[!part1+!data_s_adr],y	; Set part 1 data write destination
+0BF081 30 CC 13 FF       		mv	(!oct_flg),0ffh		; Set octave flag to initial value (unused)
+0BF085 90 24             		mv	a,[x++]			; Read first MML character and advance X
+0BF087 60 0D             		cmp	a,!cr			; CR (string terminator)?
+0BF089 18 92             		jrz	mml_conv_exit_c		; If CR, go to exit processing
+0BF08B 60 22             		cmp	a,'"'			; Double quote '"'?
+0BF08D 18 02             		jrz	mml_conv_lp		; If quote, skip it and go to loop
+0BF08F 7C 04             		dec	x			; Not a quote, back X up by 1
+0BF091                   	mml_conv_lp:
+0BF091                   		; --- Main parsing loop ---
+0BF091 60 0D             		cmp	a,!cr			; CR?
+0BF093 18 88             		jrz	mml_conv_exit_c		; If CR, go to exit processing
+0BF095 60 3A             		cmp	a,':'			; ':' ? (part separator)
+0BF097 18 B1             		jrz	part_ch			; Go to part change processing
+0BF099 60 3E             		cmp	a,'>'			; '>' ? (octave up)
+0BF09B 14 C2 F1          		jpz	oct_up			; Go to octave +1 processing
+0BF09E 60 3C             		cmp	a,'<'			; '<' ? (octave down)
+0BF0A0 14 CD F1          		jpz	oct_dw			; Go to octave -1 processing
+0BF0A3 60 4F             		cmp	a,'O'			; 'O' ? (octave specification)
+0BF0A5 14 AB F1          		jpz	oct_ch			; Go to octave change processing
+0BF0A8 60 54             		cmp	a,'T'			; 'T' ? (tempo specification)
+0BF0AA 18 DA             		jrz	temp2_ch		; Go to tempo change processing
+0BF0AC 60 4C             		cmp	a,'L'			; 'L' ? (default length specification)
+0BF0AE 18 74             		jrz	len_ch			; Go to note length change processing
+0BF0B0 60 52             		cmp	a,'R'			; 'R' ? (rest)
+0BF0B2 18 65             		jrz	kyuufu			; Go to rest processing
+0BF0B4 60 2B             		cmp	a,'+'			; '+' ? (semitone up)
+0BF0B6 14 BE F1          		jpz	oct_1up			; Go to temporary octave +1
+0BF0B9 60 2D             		cmp	a,'-'			; '-' ? (semitone down)
+0BF0BB 14 C9 F1          		jpz	oct_1dw			; Go to temporary octave -1
+0BF0BE 60 49             		cmp	a,'I'			; 'I' ? (format specification)
+0BF0C0 18 7A             		jrz	format_ch		; Go to format change processing
+0BF0C2                   	; --- Note data setup ---
+0BF0C2                   	; A: note name character (A-G or #A-#G)
+0BF0C2 2D                	onp_set:	pushu	y		; Save Y register
+0BF0C3 0D D4 F1 0B       		mv	y,mml_data1		; Standard note table start address -> Y
+0BF0C7 60 23             		cmp	a,'#'			; Sharp '#'?
+0BF0C9 18 06             		jrz	onp_skip		; If sharp, go to onp_skip (Y unchanged)
+0BF0CB 0D DB F1 0B       		mv	y,mml_data2		; Sharp note table start address -> Y
+0BF0CF 90 24             		mv	a,[x++]			; Read next character (note name)
+0BF0D1 48 41             	onp_skip:	sub	a,'A'		; Calculate relative index from 'A'
+0BF0D3 60 07             		cmp	a,7			; In range 0-6 (A-G)?
+0BF0D5 1E 3F             		jrnc	onp_skip2		; Out of range, skip note processing
+0BF0D7 45 50             		add	y,a			; Add note name offset to table address
+0BF0D9 90 05             		mv	a,[y]			; Fetch note code
+0BF0DB FD 10             		mv	il,a			; Set note code in IL register
+0BF0DD 3D                		popu	y			; Restore Y register
+0BF0DE 90 24             	onp_len:	mv	a,[x++]		; Read next character (length digit)
+0BF0E0 48 30             		sub	a,'0'			; Convert ASCII digit to binary
+0BF0E2 60 0A             		cmp	a,10			; In range 0-9?
+0BF0E4 1C 0F             		jrc	onp_len_sk2		; If digit, go to length setup
+0BF0E6 48 25             		sub	a,'U'-'0'		; Convert extended character code
+0BF0E8 60 06             		cmp	a,6			; Range check
+0BF0EA 1E 04             		jrnc	onp_len_sk		; Out of range, use default length
+0BF0EC 40 0A             		add	a,10			; Convert to extended length value (10-15)
+0BF0EE 12 05             		jr	onp_len_sk2		; Go to length setup
+0BF0F0 30 80 33          	onp_len_sk:	mv	a,(!length_adr)	; Default length pointer -> A
+0BF0F3 7C 04             		dec	x			; Back X up by 1 (no explicit length)
+0BF0F5 28                	onp_len_sk2:	pushu	a		; Save A (length value) onto stack
+0BF0F6 88 EC F1 0B       		mv	a,[format_data]		; Read format flag
+0BF0FA 60 00             		cmp	a,0			; Format = 0?
+0BF0FC 38                		popu	a			; Restore A
+0BF0FD 18 03             		jrz	onp_len_sk3		; If format=0, do not update default length
+0BF0FF 30 A0 33          		mv	(!length_adr),a		; Update default note length
+0BF102 46 01             	onp_len_sk3:	add	a,il		; Combine length + note code
+0BF104 B0 25             		mv	[y++],a			; Write to data buffer and advance Y
+0BF106 30 61 13 10       		cmp	(!oct_flg),010h		; Octave flag already set (>=10h)?
+0BF10A 02 91 F0          		jp	mml_conv_lp		; If set, go to main loop
+0BF10D 30 80 13          		mv	a,(!oct_flg)		; Fetch temporary octave flag value
+0BF110 30 CC 13 FF       		mv	(!oct_flg),0ffh		; Reset flag
+0BF114 12 99             		jr	oct_ch_s		; Go to octave setting processing
+0BF116 3D                	onp_skip2:	popu	y		; Restore Y register
+0BF117 13 88             		jr	mml_conv_lp		; Return to main loop
+0BF119                   	; --- Rest processing ---
+0BF119 09 00             	kyuufu:		mv	il,0		; Note code = 0 (rest)
+0BF11B 13 3F             		jr	onp_len			; Go to length processing
+0BF11D                   	; --- MML parsing termination ---
+0BF11D 7C 04             	mml_conv_exit_c:dec	x		; Back X up by 1 (return to CR position)
+0BF11F 08 FF             	mml_conv_exit:	mv	a,0ffh		; End marker 0FFh
+0BF121 B0 25             		mv	[y++],a			; Write end marker to data buffer
+0BF123 06                		ret				; Return
+0BF124                   	; --- Default note length change ('L' command) ---
+0BF124 90 04             	len_ch:		mv	a,[x]		; Read character at current position
+0BF126 48 30             		sub	a,'0'			; ASCII to binary conversion
+0BF128 60 0A             		cmp	a,0ah			; In range 0-9?
+0BF12A 1C 09             		jrc	len_sk			; If digit, go to length setting
+0BF12C 48 55             		sub	a,'U'			; Extended character conversion
+0BF12E 60 06             		cmp	a,6			; Range check
+0BF130 02 91 F0          		jp	mml_conv_lp		; Out of range, skip
+0BF133 40 0A             		add	a,10			; Extended value conversion
+0BF135 30 A0 33          	len_sk:		mv	(!length_adr),a	; Update default note length
+0BF138 6C 04             		inc	x			; Advance X to next character
+0BF13A 13 AB             		jr	mml_conv_lp		; Return to main loop
+0BF13C                   	; --- Format specification processing ('I' command) ---
+0BF13C 90 04             	format_ch:	mv	a,[x]		; Read character at current position
+0BF13E 48 30             		sub	a,'0'			; ASCII to binary conversion
+0BF140 1C 04             		jrc	format_sk		; Not a digit, skip
+0BF142 A8 EC F1 0B       		mv	[format_data],a		; Update format flag
+0BF146 6C 04             	format_sk:	inc	x		; Advance X to next character
+0BF148 13 B9             		jr	mml_conv_lp		; Return to main loop
+0BF14A                   	; --- Part change processing (':' command) ---
+0BF14A                   	; Terminates current part data and sets the write address for the next part
+0BF14A 2C                	part_ch:	pushu	x		; Save X register
+0BF14B 08 FF             		mv	a,0ffh			; End marker
+0BF14D B0 25             		mv	[y++],a			; Terminate current part data buffer
+0BF14F 8C E9 F1 0B       		mv	x,[MML_data_adr]	; Fetch MML data address table pointer
+0BF153 0A 10 00          		mv	ba,16			; Next part struct offset = 16
+0BF156 45 42             		add	x,ba			; Advance to next part structure address
+0BF158 AC E9 F1 0B       		mv	[MML_data_adr],x	; Update MML data address pointer
+0BF15C B5 04             		mv	[x],y			; Store data write destination in next part struct
+0BF15E 30 84 30          		mv	x,(!octerve_adr)	; Fetch octave pointer
+0BF161 6C 04             		inc	x			; Advance to next part octave storage address
+0BF163 6C 04             		inc	x
+0BF165 30 A4 30          		mv	(!octerve_adr),x	; Update octave pointer
+0BF168 30 84 33          		mv	x,(!length_adr)		; Fetch length pointer
+0BF16B 6C 04             		inc	x			; Advance to next part length storage address
+0BF16D 6C 04             		inc	x
+0BF16F 30 A4 33          		mv	(!length_adr),x		; Update length pointer
+0BF172 3C                		popu	x			; Restore X register
+0BF173 13 E4             		jr	mml_conv_lp		; Return to main loop
+0BF175                   	; --- Tempo setting processing (direct value, inside mml_conv) ---
+0BF175 90 04             	temp_ch:	mv	a,[x]		; Read character at current position
+0BF177 48 30             		sub	a,30h			; ASCII to binary conversion
+0BF179 60 0A             		cmp	a,0ah			; In range 0-9?
+0BF17B 02 91 F0          		jp	mml_conv_lp		; Out of range, skip
+0BF17E 40 D0             		add	a,0d0h			; Convert to tempo internal code
+0BF180 B0 25             		mv	[y++],a			; Write tempo code to data buffer
+0BF182 6C 04             		inc	x			; Advance X to next character
+0BF184 13 F5             		jr	mml_conv_lp		; Return to main loop
+0BF186                   	; --- Tempo setting processing ('T' command, multi-digit value) ---
+0BF186 09 00             	temp2_ch:	mv	il,0		; Clear tempo accumulator
+0BF188 08 DF             		mv	a,0dfh			; Tempo control code 0DFh
+0BF18A B0 25             		mv	[y++],a			; Write code to data buffer
+0BF18C 90 04             	temp2_lp1:	mv	a,[x]		; Read character at current position
+0BF18E 48 30             		sub	a,30h			; ASCII to binary conversion
+0BF190 60 0A             		cmp	a,10			; In range 0-9?
+0BF192 1E 12             		jrnc	temp2_sk1		; Not a digit, end loop
+0BF194 28                		pushu	a			; Save digit value
+0BF195 FD 01             		mv	a,il			; Current accumulator -> A
+0BF197 46 00             		add	a,a			; A * 2
+0BF199 46 00             		add	a,a			; A * 4
+0BF19B 46 10             		add	il,a			; IL = IL + A*4 (= IL*5)
+0BF19D 46 11             		add	il,il			; IL = IL * 2 (= IL*10)
+0BF19F 38                		popu	a			; Restore digit value
+0BF1A0 46 10             		add	il,a			; IL = IL * 10 + digit
+0BF1A2 6C 04             		inc	x			; Advance X to next character
+0BF1A4 13 1A             		jr	temp2_lp1		; Process next digit
+0BF1A6 B1 25             	temp2_sk1:	mv	[y++],il	; Write final tempo value to data buffer
+0BF1A8 02 91 F0          		jp	mml_conv_lp		; Return to main loop
+0BF1AB                   	; --- Octave change processing ('O' command) ---
+0BF1AB 90 24             	oct_ch:		mv	a,[x++]		; Read octave digit and advance X
+0BF1AD 48 30             		sub	a,30h			; ASCII to binary conversion
+0BF1AF 60 0A             	oct_ch_s:	cmp	a,10		; In range 0-9?
+0BF1B1 02 91 F0          		jp	mml_conv_lp		; Out of range, skip
+0BF1B4 30 A0 30          		mv	(!octerve_adr),a	; Update octave value
+0BF1B7 40 E0             		add	a,0e0h			; Convert to octave control code (0E0h-0E9h)
+0BF1B9 B0 25             		mv	[y++],a			; Write octave code to data buffer
+0BF1BB 02 91 F0          		jp	mml_conv_lp		; Return to main loop
+0BF1BE                   	; --- Temporary octave +1 ('+' command) ---
+0BF1BE 32 C8 13 30       	oct_1up:	mv	(!oct_flg),(!octerve_adr) ; Save current octave to flag
+0BF1C2 30 80 30          	oct_up:		mv	a,(!octerve_adr); Fetch current octave value
+0BF1C5 6C 00             		inc	a			; Octave + 1
+0BF1C7 13 1A             		jr	oct_ch_s		; Go to octave setting processing
+0BF1C9                   	; --- Temporary octave -1 ('-' command) ---
+0BF1C9 32 C8 13 30       	oct_1dw:	mv	(!oct_flg),(!octerve_adr) ; Save current octave to flag
+0BF1CD 30 80 30          	oct_dw:		mv	a,(!octerve_adr); Fetch current octave value
+0BF1D0 7C 00             		dec	a			; Octave - 1
+0BF1D2 13 25             		jr	oct_ch_s		; Go to octave setting processing
+0BF1D4                   	; ============================================================
+0BF1D4                   	; Note code table
+0BF1D4                   	; mml_data1: Standard notes (C D E F G A B and rest)
+0BF1D4                   	; mml_data2: Sharp notes (#C #D #F #G #A)
+0BF1D4                   	; ============================================================
+0BF1D4 A0                	mml_data1:	db	0a0h		; A
+0BF1D5 C0                		db	0c0h		; B
+0BF1D6 10                		db	010h		; C
+0BF1D7 30                		db	030h		; D
+0BF1D8 50                		db	050h		; E
+0BF1D9 60                		db	060h		; F
+0BF1DA 80                		db	080h		; G
+0BF1DB B0                	mml_data2:	db	0b0h		; #A
+0BF1DC 10                		db	010h		; #B -> equivalent to C
+0BF1DD 20                		db	020h		; #C
+0BF1DE 40                		db	040h		; #D
+0BF1DF 50                		db	050h		; #E -> equivalent to F
+0BF1E0 70                		db	070h		; #F
+0BF1E1 90                		db	090h		; #G
+0BF1E2                   	; --- Terminator data / default initial values ---
+0BF1E2 FF                	not_data:	db	0ffh		; End marker (when part is unused)
+0BF1E3 03                	octerve:	db	3		; Default octave value (part 1)
+0BF1E4 05                	length:		db	5		; Default note length value (part 1)
+0BF1E5 03                	octerve2:	db	3		; Default octave value (part 2)
+0BF1E6 05                	length2:	db	5		; Default note length value (part 2)
+0BF1E7 03                	octerve3:	db	3		; Default octave value (part 3)
+0BF1E8 05                	length3:	db	5		; Default note length value (part 3)
+0BF1E9 00 00 00          	MML_data_adr:	ds		3	; MML data write address pointer (3 bytes)
+0BF1EC 01                	format_data:	db	1		; Format flag (1 = update default length)
+0BF1ED                   		endl				; End local scope
+0BF1ED                   	; ============================================================
+0BF1ED                   	; init1 - Reset part playback state (counter reset)
+0BF1ED                   	; ============================================================
+0BF1ED 12 1F             		jr	init2			; Jump to init2 (skip past init1 entry)
+0BF1EF 0D 00 00 00       	init1:		mv	y,0		; Y = 0
+0BF1F3 AD 2F F5 0B       		mv	[part1+o_count],y	; Clear part 1 pitch counter
+0BF1F7 AD 3F F5 0B       		mv	[part2+o_count],y	; Clear part 2 pitch counter
+0BF1FB AD 4F F5 0B       		mv	[part3+o_count],y	; Clear part 3 pitch counter
+0BF1FF 08 02             		mv	a,2			; Initial octave value = 2
+0BF201 A8 2C F5 0B       		mv	[part1+oct],a		; Initialize part 1 octave
+0BF205 A8 3C F5 0B       		mv	[part2+oct],a		; Initialize part 2 octave
+0BF209 A8 4C F5 0B       		mv	[part3+oct],a		; Initialize part 3 octave
+0BF20D 07                		retf				; Far return
+0BF20E                   	; ============================================================
+0BF20E                   	; init2 - Initialize playback data pointers
+0BF20E                   	; Resets each part's data address to the start, then enters the play loop
+0BF20E                   	; ============================================================
+0BF20E 0B 00 00          	init2:		mv	i,0		; I = 0 (clear note code)
+0BF211 AB 2D F5 0B       		mv	[part1+onp],i		; Clear part 1 note code
+0BF215 AB 3D F5 0B       		mv	[part2+onp],i		; Clear part 2 note code
+0BF219 AB 4D F5 0B       		mv	[part3+onp],i		; Clear part 3 note code
+0BF21D 8D 29 F5 0B       		mv	y,[part1+data_s_adr]	; Fetch part 1 data start address
+0BF221 AD 26 F5 0B       		mv	[part1+data_adr],y	; Set part 1 current data address to start
+0BF225 8D 39 F5 0B       		mv	y,[part2+data_s_adr]	; Fetch part 2 data start address
+0BF229 AD 36 F5 0B       		mv	[part2+data_adr],y	; Set part 2 current data address to start
+0BF22D 8D 49 F5 0B       		mv	y,[part3+data_s_adr]	; Fetch part 3 data start address
+0BF231 AD 46 F5 0B       		mv	[part3+data_adr],y	; Set part 3 current data address to start
+0BF235                   	; ============================================================
+0BF235                   	; main2 - Main playback loop
+0BF235                   	; Reads MML data for each part, determines note/length, and
+0BF235                   	; passes control to the buzzer output routine
+0BF235                   	; ============================================================
+0BF235 0C 26 F5 0B       	main2:		mv	x,part1		; Part 1 parameter address -> X
+0BF239 04 5B F3          		call	mml			; Process part 1 MML data
+0BF23C 0C 36 F5 0B       		mv	x,part2			; Part 2 parameter address -> X
+0BF240 04 5B F3          		call	mml			; Process part 2 MML data
+0BF243 0C 46 F5 0B       		mv	x,part3			; Part 3 parameter address -> X
+0BF247 04 5B F3          		call	mml			; Process part 3 MML data
+0BF24A                   		; --- Find minimum note length across 3 parts ---
+0BF24A 08 00             		mv	a,0			; A = 0 (minimum length candidate)
+0BF24C 75                		mv	b,a			; B = 0
+0BF24D 88 2E F5 0B       		mv	a,[part1+l_count]	; Fetch part 1 remaining length counter
+0BF251 30 D0 00 3E F5 0B 		mv	(part_c),[part2+l_count]; Fetch part 2 remaining length counter
+0BF257 30 61 00 00       		cmp	(part_c),0		; Part 2 = 0 (finished)?
+0BF25B 18 08             		jrz	main2_skip1		; If 0, skip comparison
+0BF25D 30 63 00          		cmp	(part_c),a		; Part 2 < part 1?
+0BF260 1E 03             		jrnc	main2_skip1		; If part 2 >= part 1, skip
+0BF262 30 80 00          		mv	a,(part_c)		; Part 2 value is smaller -> adopt in A
+0BF265 30 D0 00 4E F5 0B 	main2_skip1:	mv	(part_c),[part3+l_count]; Fetch part 3 remaining length counter
+0BF26B 30 61 00 00       		cmp	(part_c),0		; Part 3 = 0 (finished)?
+0BF26F 18 08             		jrz	main2_skip2		; If 0, skip comparison
+0BF271 30 63 00          		cmp	(part_c),a		; Part 3 < current minimum?
+0BF274 1E 03             		jrnc	main2_skip2		; If part 3 >= current minimum, skip
+0BF276 30 80 00          		mv	a,(part_c)		; Part 3 value is smaller -> adopt in A
+0BF279 60 00             	main2_skip2:	cmp	a,0		; Minimum length = 0? (all parts finished)
+0BF27B 18 DD             		jrz	exit			; If 0, end playback
+0BF27D FD 10             		mv	il,a			; Set minimum length in IL
+0BF27F                   		; --- Subtract minimum value from each part's remaining length ---
+0BF27F 88 2E F5 0B       		mv	a,[part1+l_count]	; Fetch part 1 remaining length
+0BF283 4E 01             		sub	a,il			; Subtract minimum length
+0BF285 A8 2E F5 0B       		mv	[part1+l_count],a	; Update part 1 remaining length
+0BF289 88 3E F5 0B       		mv	a,[part2+l_count]	; Fetch part 2 remaining length
+0BF28D 4E 01             		sub	a,il			; Subtract minimum length
+0BF28F A8 3E F5 0B       		mv	[part2+l_count],a	; Update part 2 remaining length
+0BF293 88 4E F5 0B       		mv	a,[part3+l_count]	; Fetch part 3 remaining length
+0BF297 4E 01             		sub	a,il			; Subtract minimum length
+0BF299 A8 4E F5 0B       		mv	[part3+l_count],a	; Update part 3 remaining length
+0BF29D                   		; --- Calculate buzzer output counter ---
+0BF29D 44 33             		add	i,i			; Shift I left (prepare for bit operations)
+0BF29F 88 1B F5 0B       		mv	a,[temp]		; Fetch tempo value
+0BF2A3 0C 00 00 00       		mv	x,0			; X = 0 (accumulation counter)
+0BF2A7 44 33             	main2_lp1:	add	i,i		; Shift I left with carry
+0BF2A9 9F                		rc				; If no carry, continue to next bit
+0BF2AA F4                		shr	a			; Shift tempo bit right
+0BF2AB 1E 02             		jrnc	main2_skip		; If tempo bit = 0, skip
+0BF2AD 45 43             		add	x,i			; If tempo bit = 1, add I to X
+0BF2AF 60 00             	main2_skip:	cmp	a,0		; Tempo value processing complete?
+0BF2B1 19 0C             		jrz	main2_lp1		; If not, process next bit
+0BF2B3 AC 1C F5 0B       		mv	[count],x		; Save calculated counter value
+0BF2B7                   		; --- Select buzzer output routine based on number of active parts ---
+0BF2B7 30 CC 00 00       		mv	(part_c),0		; Clear active part counter
+0BF2BB 0D 1F F5 0B       		mv	y,count1		; Pitch counter storage -> Y
+0BF2BF 88 2D F5 0B       		mv	a,[part1+onp]		; Fetch part 1 note code
+0BF2C3 6C 00             		inc	a			; Increment for 0FFh check (+1 makes it 0)
+0BF2C5 18 0D             		jrz	p1_skip			; 0FFh (terminator/invalid), skip
+0BF2C7 7C 00             		dec	a			; Restore value
+0BF2C9 18 09             		jrz	p1_skip			; 0 (rest/silent), skip
+0BF2CB 8A 2F F5 0B       		mv	ba,[part1+o_count]	; Fetch part 1 pitch counter
+0BF2CF B2 25             		mv	[y++],ba		; Store pitch counter in count1, advance Y
+0BF2D1 30 6D 00          		inc	(part_c)		; Active part count + 1
+0BF2D4 88 3D F5 0B       	p1_skip:	mv	a,[part2+onp]	; Fetch part 2 note code
+0BF2D8 6C 00             		inc	a			; Increment for 0FFh check
+0BF2DA 18 0D             		jrz	p2_skip			; 0FFh, skip
+0BF2DC 7C 00             		dec	a			; Restore value
+0BF2DE 18 09             		jrz	p2_skip			; 0, skip
+0BF2E0 8A 3F F5 0B       		mv	ba,[part2+o_count]	; Fetch part 2 pitch counter
+0BF2E4 B2 25             		mv	[y++],ba		; Store pitch counter in count2, advance Y
+0BF2E6 30 6D 00          		inc	(part_c)		; Active part count + 1
+0BF2E9 88 4D F5 0B       	p2_skip:	mv	a,[part3+onp]	; Fetch part 3 note code
+0BF2ED 6C 00             		inc	a			; Increment for 0FFh check
+0BF2EF 18 0D             		jrz	p3_skip			; 0FFh, skip
+0BF2F1 7C 00             		dec	a			; Restore value
+0BF2F3 18 09             		jrz	p3_skip			; 0, skip
+0BF2F5 8A 4F F5 0B       		mv	ba,[part3+o_count]	; Fetch part 3 pitch counter
+0BF2F9 B2 25             		mv	[y++],ba		; Store pitch counter in count3, advance Y
+0BF2FB 30 6D 00          		inc	(part_c)		; Active part count + 1
+0BF2FE 8C 1C F5 0B       	p3_skip:	mv	x,[count]	; Fetch sound duration counter
+0BF302 8A 1F F5 0B       		mv	ba,[count1]		; Fetch count1 (part 1 pitch counter)
+0BF306 FD 32             		mv	i,ba			; I = count1 (candidate initial value for part 2)
+0BF308 FD 53             		mv	y,i			; Y = I (candidate initial value for part 3)
+0BF30A                   		; --- Patch immediate values in beep_out3 with pitch counter values ---
+0BF30A AA 05 F4 0B       		mv	[!beep_out3!part1_co1+1],ba	; Set part 1 pitch reload value
+0BF30E AB 50 F4 0B       		mv	[!beep_out3!part2_co2+1],i	; Set part 2 pitch reload value (2)
+0BF312 AB 10 F4 0B       		mv	[!beep_out3!part2_co1+1],i	; Set part 2 pitch reload value (1)
+0BF316 AD 17 F4 0B       		mv	[!beep_out3!part3_co1+1],y	; Set part 3 pitch reload value (1)
+0BF31A AD 38 F4 0B       		mv	[!beep_out3!part3_co2+1],y	; Set part 3 pitch reload value (2)
+0BF31E AD 57 F4 0B       		mv	[!beep_out3!part3_co3+1],y	; Set part 3 pitch reload value (3)
+0BF322 AD 6B F4 0B       		mv	[!beep_out3!part3_co4+1],y	; Set part 3 pitch reload value (4)
+0BF326 30 7D 00          		dec	(part_c)		; Active part count - 1
+0BF329 14 E4 F3          		jpz	beep_out3		; If >= 0 (1+ parts), go to beep_out3
+0BF32C 8B 21 F5 0B       		mv	i,[count2]		; Fetch count2 (actual pitch counter for part 2)
+0BF330                   		; --- 2+ parts active: update part 2 pitch counter ---
+0BF330 AB 50 F4 0B       		mv	[!beep_out3!part2_co2+1],i	; Re-set part 2 pitch reload value (2)
+0BF334 AB 10 F4 0B       		mv	[!beep_out3!part2_co1+1],i	; Re-set part 2 pitch reload value (1)
+0BF338 7C 03             		dec	i			; I -= 1 (timing adjustment)
+0BF33A 7C 03             		dec	i			; I -= 1
+0BF33C 7C 03             		dec	i			; I -= 1
+0BF33E 30 7D 00          		dec	(part_c)		; Active part count - 1
+0BF341 14 E4 F3          		jpz	beep_out3		; If remaining >= 0, go to beep_out3
+0BF344 8A 23 F5 0B       		mv	ba,[count3]		; Fetch count3 (actual pitch counter for part 3)
+0BF348                   		; --- 3 parts active: update part 1 pitch counter ---
+0BF348 AA 05 F4 0B       		mv	[!beep_out3!part1_co1+1],ba	; Re-set part 1 pitch reload value
+0BF34C 7C 02             		dec	ba			; BA -= 1 (timing adjustment)
+0BF34E 7C 02             		dec	ba			; BA -= 1
+0BF350 7C 02             		dec	ba			; BA -= 1
+0BF352 30 7D 00          		dec	(part_c)		; Active part count - 1
+0BF355 14 E4 F3          		jpz	beep_out3		; Go to beep_out3
+0BF358                   		; --- 0 parts (all rests or all finished): go to silent output ---
+0BF358 12 75             		jr	beep_out0		; Go to silent buzzer output routine
+0BF35A 07                	exit:		retf			; Playback complete, far return (back to BASIC)
+0BF35B                   	; ============================================================
+0BF35B                   	; mml - MML data read routine
+0BF35B                   	; X: part parameter address
+0BF35B                   	; Return: CY=1 data end, CY=0 I=pitch counter
+0BF35B                   	; ============================================================
+0BF35B 2D                	mml:		pushu	y		; Save Y register
+0BF35C 90 84 07          		mv	a,[x+onp]		; Read part note code
+0BF35F 60 FF             		cmp	a,0ffh			; 0FFh (data terminator)?
+0BF361 18 26             		jrz	mml_exit		; If terminator, go to exit processing
+0BF363 90 84 08          		mv	a,[x+l_count]		; Read length counter
+0BF366 60 00             		cmp	a,0			; Length counter = 0?
+0BF368 1A 2A             		jrnz	skip_exit		; If not 0 (still sounding), go to skip_exit
+0BF36A 95 04             		mv	y,[x]			; Fetch data address pointer
+0BF36C 90 25             	mml_loop:	mv	a,[y++]		; Read data byte and advance Y
+0BF36E 60 FF             		cmp	a,0ffh			; 0FFh (data terminator)?
+0BF370 18 17             		jrz	mml_exit		; If terminator, go to exit processing
+0BF372 60 DF             		cmp	a,0dfh			; 0DFh (tempo code)?
+0BF374 18 0B             		jrz	temp_ch			; Go to tempo processing
+0BF376 60 E0             		cmp	a,0e0h			; >= 0E0h? (0E0h-0E9h: octave codes)
+0BF378 1C 20             		jrc	mml_onp			; If < 0E0h, go to note data processing
+0BF37A                   		; --- Octave setting code processing (0E0h-0E9h) ---
+0BF37A 70 0F             	oct_ch:		and	a,0fh		; Extract lower 4 bits (octave value)
+0BF37C B0 84 06          		mv	[x+oct],a		; Update part octave value
+0BF37F 13 15             		jr	mml_loop		; Return to data read loop
+0BF381                   		; --- Tempo setting code processing (0DFh) ---
+0BF381 90 25             	temp_ch:	mv	a,[y++]		; Read tempo value byte and advance Y
+0BF383 A8 1B F5 0B       		mv	[temp],a		; Update tempo variable
+0BF387 13 1D             		jr	mml_loop		; Return to data read loop
+0BF389                   		; --- Data terminator processing ---
+0BF389 B0 84 07          	mml_exit:	mv	[x+onp],a	; Record terminator value (0FFh) as note code
+0BF38C 08 00             		mv	a,0			; A = 0
+0BF38E B0 84 08          		mv	[x+l_count],a		; Clear length counter
+0BF391 3D                		popu	y			; Restore Y register
+0BF392 97                		sc				; Set carry (indicates data end)
+0BF393 06                		ret				; Return
+0BF394                   		; --- Sustain: return current pitch counter ---
+0BF394 93 84 09          	skip_exit:	mv	i,[x+o_count]	; Read pitch counter into I
+0BF397 3D                		popu	y			; Restore Y register
+0BF398 9F                		rc				; Clear carry (indicates sustain)
+0BF399 06                		ret				; Return
+0BF39A                   		; --- Note data processing ---
+0BF39A                   		; Calculates and sets pitch counter and length counter from note code
+0BF39A B5 04             	mml_onp:	mv	[x],y		; Update data address pointer (3 bytes)
+0BF39C 28                		pushu	a			; Save note code
+0BF39D 70 F0             		and	a,0f0h			; Extract upper 4 bits (note name index)
+0BF39F E4                		ror	a			; Rotate right 1st time
+0BF3A0 E4                		ror	a			; Rotate right 2nd time -> index/4
+0BF3A1 FD 10             		mv	il,a			; IL = index/4
+0BF3A3 E4                		ror	a			; Rotate right 3rd time
+0BF3A4 E4                		ror	a			; Rotate right 4th time -> index/16
+0BF3A5 B0 84 07          		mv	[x+onp],a		; Store compressed note code in parameter
+0BF3A8 46 01             		add	a,il			; a = index/4 + index/16
+0BF3AA 46 00             		add	a,a			; a = (index/4 + index/16) * 2
+0BF3AC 0D 89 F4 0B       		mv	y,mml_data		; Pitch data table start address -> Y
+0BF3B0 45 50             		add	y,a			; Advance to entry for this note name
+0BF3B2 90 84 06          		mv	a,[x+oct]		; Fetch part octave value
+0BF3B5 46 00             		add	a,a			; Octave * 2 (2 bytes per entry offset)
+0BF3B7 45 50             		add	y,a			; Advance to entry for this octave
+0BF3B9 93 05             		mv	i,[y]			; Read pitch counter value
+0BF3BB B3 84 09          		mv	[x+o_count],i		; Set pitch counter in parameter
+0BF3BE 38                		popu	a			; Restore note code
+0BF3BF 70 0F             		and	a,0fh			; Extract lower 4 bits (length index)
+0BF3C1 0D 0B F5 0B       		mv	y,length_data		; Note length data table start address -> Y
+0BF3C5 45 50             		add	y,a			; Advance to entry for this length index
+0BF3C7 90 05             		mv	a,[y]			; Read note length value
+0BF3C9 B0 84 08          		mv	[x+l_count],a		; Set length counter in parameter
+0BF3CC 3D                		popu	y			; Restore Y register
+0BF3CD 9F                		rc				; Clear carry (note set complete)
+0BF3CE 06                		ret				; Return
+0BF3CF                   	; ============================================================
+0BF3CF                   	; beep_out0 - Silent buzzer output routine
+0BF3CF                   	; Generates timing for intervals where no sound is playing
+0BF3CF                   	; 1 loop = approx. 78 states (48.1 us)
+0BF3CF                   	; X: sound duration counter
+0BF3CF                   	; ============================================================
+0BF3CF                   	beep_out0:	local			; Begin local scope
+0BF3CF 0B 04 00          	loop:		mv	i,4		; Inner loop counter = 4
+0BF3D2 7C 03             	loop1:		dec	i		; Counter - 1 (6 states)
+0BF3D4 1B 04             		jrnz	loop1			; Repeat if not zero (4 or 6 states)
+0BF3D6 30 CC FD 02       		mv	(!beep),2h		; Buzzer OFF (8 states)
+0BF3DA 00                		nop				; 2 states (timing pad)
+0BF3DB 00                		nop				; 2 states (timing pad)
+0BF3DC 00                		nop				; 2 states (timing pad)
+0BF3DD 7C 04             	b_ent:		dec	x		; Sound duration counter - 1 (6 states)
+0BF3DF 1B 12             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF3E1 02 35 F2          		jp	!main2			; Return to main playback loop
+0BF3E4                   		endl				; End local scope
+0BF3E4                   	; ============================================================
+0BF3E4                   	; beep_out3 - 3-voice buzzer output routine
+0BF3E4                   	; Manages pitch counters for 3 parts and toggles the buzzer
+0BF3E4                   	; to generate pseudo 3-voice chords
+0BF3E4                   	; ba: part 1 pitch counter
+0BF3E4                   	; i:  part 2 pitch counter
+0BF3E4                   	; y:  part 3 pitch counter
+0BF3E4                   	; x:  sound duration counter
+0BF3E4                   	; ============================================================
+0BF3E4                   	beep_out3:	local			; Begin local scope
+0BF3E4                   		; --- Write each part's pitch reload value into immediate fields ---
+0BF3E4 AA 05 F4 0B       		mv	[part1_co1+1],ba	; Set part 1 reload value
+0BF3E8 AB 10 F4 0B       		mv	[part2_co1+1],i		; Set part 2 reload value (1)
+0BF3EC AB 50 F4 0B       		mv	[part2_co2+1],i		; Set part 2 reload value (2)
+0BF3F0 AD 17 F4 0B       		mv	[part3_co1+1],y		; Set part 3 reload value (1)
+0BF3F4 AD 38 F4 0B       		mv	[part3_co2+1],y		; Set part 3 reload value (2)
+0BF3F8 AD 57 F4 0B       		mv	[part3_co3+1],y		; Set part 3 reload value (3)
+0BF3FC AD 6B F4 0B       		mv	[part3_co4+1],y		; Set part 3 reload value (4)
+0BF400                   		; --- Main buzzer loop ---
+0BF400 7C 02             	loop:		dec	ba		; Part 1 counter - 1 (6 states)
+0BF402 1A 41             		jrnz	skip1			; If not zero, go to skip1 (4 or 6 states)
+0BF404 0A 00 00          	part1_co1:	mv	ba,0		; Reload part 1 counter (immediate field) (6 states)
+0BF407 30 CC FD 02       		mv	(!beep),2h		; Buzzer OFF (part 1 toggle) (8 states)
+0BF40B 7C 03             		dec	i			; Part 2 counter - 1 (6 states)
+0BF40D 1A 22             		jrnz	skip2			; If not zero, go to skip2 (4 or 6 states)
+0BF40F 0B 00 00          	part2_co1:	mv	i,0		; Reload part 2 counter (immediate field) (6 states)
+0BF412 7C 05             		dec	y			; Part 3 counter - 1 (6 states)
+0BF414 1A 0E             		jrnz	skip3			; If not zero, go to skip3 (4 or 6 states)
+0BF416 0D 00 00 00       	part3_co1:	mv	y,0		; Reload part 3 counter (immediate field) (8 states)
+0BF41A 30 CC FD 12       		mv	(!beep),12h		; Buzzer ON (parts 1+3 simultaneous toggle) (8 states)
+0BF41E 7C 04             		dec	x			; Sound duration counter - 1 (6 states)
+0BF420 1B 22             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF422 12 5E             		jr	exit			; Go to exit processing
+0BF424                   		; --- Part 3 count reaches zero (part 2 continues) ---
+0BF424 00                	skip3:		nop			; 2 states (timing pad)
+0BF425 00                		nop				; 2 states (timing pad)
+0BF426 00                		nop				; 2 states (timing pad)
+0BF427 30 CC FD 12       		mv	(!beep),12h		; Buzzer ON (8 states)
+0BF42B 7C 04             		dec	x			; Sound duration counter - 1 (6 states)
+0BF42D 1B 2F             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF42F 12 51             		jr	exit			; Go to exit processing
+0BF431                   		; --- Part 2 count reaches zero ---
+0BF431 00                	skip2:		nop			; 4 states (timing pad)
+0BF432 00                		nop				; 2 states (timing pad)
+0BF433 7C 05             		dec	y			; Part 3 counter - 1 (6 states)
+0BF435 1B 13             		jrnz	skip3			; If not zero, go to skip3 (4 or 6 states)
+0BF437 0D 00 00 00       	part3_co2:	mv	y,0		; Reload part 3 counter (immediate field) (8 states)
+0BF43B 30 CC FD 12       		mv	(!beep),12h		; Buzzer ON (parts 2+3 simultaneous toggle) (8 states)
+0BF43F 7C 04             		dec	x			; Sound duration counter - 1 (6 states)
+0BF441 1B 43             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF443 12 3D             		jr	exit			; Go to exit processing
+0BF445                   		; --- Part 1 is not zero ---
+0BF445 00                	skip1:		nop			; 2 states (timing pad)
+0BF446 00                		nop				; 2 states (timing pad)
+0BF447 30 CC FD 02       		mv	(!beep),2h		; Buzzer OFF (part 1 still running) (8 states)
+0BF44B 7C 03             		dec	i			; Part 2 counter - 1 (6 states)
+0BF44D 1A 15             		jrnz	skip12			; If not zero, go to skip12 (4 or 6 states)
+0BF44F 0B 00 00          	part2_co2:	mv	i,0		; Reload part 2 counter (immediate field) (6 states)
+0BF452 7C 05             		dec	y			; Part 3 counter - 1 (6 states)
+0BF454 1B 32             		jrnz	skip3			; If not zero, go to skip3 (4 or 6 states)
+0BF456 0D 00 00 00       	part3_co3:	mv	y,0		; Reload part 3 counter (immediate field) (8 states)
+0BF45A 30 CC FD 12       		mv	(!beep),12h		; Buzzer ON (parts 2+3 toggle) (8 states)
+0BF45E 7C 04             		dec	x			; Sound duration counter - 1 (6 states)
+0BF460 1B 62             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF462 12 1E             		jr	exit			; Go to exit processing
+0BF464                   		; --- Part 2 only reaches zero (part 1 running, part 3 running) ---
+0BF464 00                	skip12:		nop			; 2 states (timing pad)
+0BF465 00                		nop				; 2 states (timing pad)
+0BF466 7C 05             		dec	y			; Part 3 counter - 1 (6 states)
+0BF468 1A 0E             		jrnz	skip13			; If not zero, go to skip13 (4 or 6 states)
+0BF46A 0D 00 00 00       	part3_co4:	mv	y,0		; Reload part 3 counter (immediate field) (8 states)
+0BF46E 30 CC FD 12       		mv	(!beep),12h		; Buzzer ON (part 3 toggle) (8 states)
+0BF472 7C 04             		dec	x			; Sound duration counter - 1 (6 states)
+0BF474 1B 76             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF476 12 0A             		jr	exit			; Go to exit processing
+0BF478                   		; --- All parts running (parts 1, 2, 3 are all non-zero) ---
+0BF478 00                	skip13:		nop			; 2 states (timing pad)
+0BF479 00                		nop				; 2 states (timing pad)
+0BF47A 00                		nop				; 2 states (timing pad)
+0BF47B 00                		nop				; 2 states (timing pad)
+0BF47C 00                		nop				; 2 states (timing pad)
+0BF47D 00                		nop				; 2 states (timing pad)
+0BF47E 7C 04             		dec	x			; Sound duration counter - 1 (6 states)
+0BF480 1B 82             		jrnz	loop			; If not zero, continue loop (4 or 6 states)
+0BF482 30 CC FD 02       	exit:		mv	(!beep),2h	; Buzzer OFF (duration end)
+0BF486 02 35 F2          		jp	!main2			; Return to main playback loop
+0BF489                   		endl				; End local scope
+0BF489                   	; ============================================================
+0BF489                   	; mml_data - Pitch counter value table
+0BF489                   	; Pitch counter values per note name x octave (0-4), 2 bytes/entry
+0BF489                   	; Notes: R C #C D #D E F #F G #G A #A B (13 notes + rest)
+0BF489                   	; Octaves: 0 (lowest) - 4 (highest)
+0BF489                   	; ============================================================
+0BF489                   	mml_data:	
+0BF489 00 00 00 00 00 00 		dw	000h,000h,000h,000h	; R (rest) octave 0-3
+0BF48F 00 00             	
+0BF491 00 00             		dw	000h			; R octave 4
+0BF493 2E 01 97 00 4C 00 		dw	12eh,097h,04ch,026h	; C  octave 0-3
+0BF499 26 00             	
+0BF49B 13 00             		dw	013h			; C  octave 4
+0BF49D 1D 01 8F 00 48 00 		dw	11dh,08fh,048h,024h	; #C octave 0-3
+0BF4A3 24 00             	
+0BF4A5 12 00             		dw	012h			; #C octave 4
+0BF4A7 0D 01 87 00 44 00 		dw	10dh,087h,044h,022h	; D  octave 0-3
+0BF4AD 22 00             	
+0BF4AF 11 00             		dw	011h			; D  octave 4
+0BF4B1 FE 00 7F 00 40 00 		dw	0feh,07fh,040h,020h	; #D octave 0-3
+0BF4B7 20 00             	
+0BF4B9 10 00             		dw	010h			; #D octave 4
+0BF4BB F0 00 78 00 3C 00 		dw	0f0h,078h,03ch,01eh	; E  octave 0-3
+0BF4C1 1E 00             	
+0BF4C3 0F 00             		dw	00fh			; E  octave 4
+0BF4C5 E2 00 71 00 39 00 		dw	0e2h,071h,039h,01dh	; F  octave 0-3
+0BF4CB 1D 00             	
+0BF4CD 0F 00             		dw	00fh			; F  octave 4
+0BF4CF D6 00 6B 00 36 00 		dw	0d6h,06bh,036h,01bh	; #F octave 0-3
+0BF4D5 1B 00             	
+0BF4D7 0E 00             		dw	00eh			; #F octave 4
+0BF4D9 CA 00 65 00 33 00 		dw	0cah,065h,033h,01ah	; G  octave 0-3
+0BF4DF 1A 00             	
+0BF4E1 0D 00             		dw	00dh			; G  octave 4
+0BF4E3 BE 00 5F 00 30 00 		dw	0beh,05fh,030h,018h	; #G octave 0-3
+0BF4E9 18 00             	
+0BF4EB 0C 00             		dw	00ch			; #G octave 4
+0BF4ED B4 00 5A 00 2D 00 		dw	0b4h,05ah,02dh,017h	; A  octave 0-3
+0BF4F3 17 00             	
+0BF4F5 0C 00             		dw	00ch			; A  octave 4
+0BF4F7 AA 00 55 00 2B 00 		dw	0aah,055h,02bh,016h	; #A octave 0-3
+0BF4FD 16 00             	
+0BF4FF 0B 00             		dw	00bh			; #A octave 4
+0BF501 A0 00 50 00 28 00 		dw	0a0h,050h,028h,014h	; B  octave 0-3
+0BF507 14 00             	
+0BF509 0A 00             		dw	00ah			; B  octave 4
+0BF50B                   	; ============================================================
+0BF50B                   	; length_data - Note length counter value table
+0BF50B                   	; Note length counter values for indices 0-15
+0BF50B                   	; ============================================================
+0BF50B 03 06 09 0C 12    	length_data:	db	003h,006h,009h,00ch,012h ; Length 1/32 1/16 1/12 1/8 1/6
+0BF510 18 24 30 48       		db	018h,024h,030h,048h	; Length 1/4  1/3  1/2  1/1
+0BF514 60                		db	060h			; Dotted half note
+0BF515 02 04 06 10       		db	002h,004h,006h,010h	; Extended lengths
+0BF519 20 01             		db	020h,001h		; Extended lengths
+0BF51B                   	; --- Work variable area ---
+0BF51B 01                	temp:		db	1		; Tempo value (initial = 1)
+0BF51C 00 00 00          	count:		dp	0		; Sound duration counter (3-byte pointer)
+0BF51F 00 00             	count1:		db	0,0		; Part 1 pitch counter storage
+0BF521 00 00             	count2:		db	0,0		; Part 2 pitch counter storage
+0BF523 00 00 00          	count3:		db	0,0,0		; Part 3 pitch counter storage
+0BF526                   	; --- Part parameter area ---
+0BF526 00 00 00 00 00 00 	part1:		ds	16		; Part 1 parameter structure (16 bytes)
+0BF52C 00 00 00 00 00 00 	
+0BF532 00 00 00 00       	
+0BF536 00 00 00 00 00 00 	part2:		ds	16		; Part 2 parameter structure (16 bytes)
+0BF53C 00 00 00 00 00 00 	
+0BF542 00 00 00 00       	
+0BF546 00 00 00 00 00 00 	part3:		ds	16		; Part 3 parameter structure (16 bytes)
+0BF54C 00 00 00 00 00 00 	
+0BF552 00 00 00 00       	
+0BF556 00                	r_flg:		ds	1		; Reserved flag
+0BF557 00                	data_buff:	ds	1		; MML data buffer (1 byte, used for single part)
+0BF558                   		end
+
+  No fatal error.  Code: 0BF000h - 0BF557h [     1368 byte(s)]
