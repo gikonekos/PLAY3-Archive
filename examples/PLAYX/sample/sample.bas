@@ -4,7 +4,7 @@
 40 '#   June Matsunoki
 50 '#   (C) 1992.1.5
 60 CLEAR:CLS
-70 POKE &17,75: 'テンポショキセッティ
+70 POKE &17,75: 'ﾃﾝﾎﾟｼｮｷｾｯﾃｲ
 80 PLAYX "T1O2:O1:O0
 90 *A
 100 PLAYX "+D3+#CBA1BB3A#FE:+D5BA#C:B7A
