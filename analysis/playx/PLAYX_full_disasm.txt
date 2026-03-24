@@ -1,0 +1,445 @@
+; PLAYX SC62015 完全逆アセンブル
+; 生成: 2026-03-24, 一次資料(活用研究)の情報に基づく
+; ロードアドレス: $BF000
+
+
+PLAYX_ENTRY:  ; ========== $BF000
+  $BF000: 0C 13 F0 0B           MV X,$BF013H
+  $BF004: 30                    PRE $30  [(n)/(BP+n)]
+  $BF005: BC 80 D1 90           MV [($D1H)+$90H],X
+  $BF009: 0C 1C F0 0B           MV X,$BF01CH
+  $BF00D: 30                    PRE $30  [(n)/(BP+n)]
+  $BF00E: BC 80 D1 93           MV [($D1H)+$93H],X
+  $BF012: 07                    RETF
+
+PLAYX_CMD_TABLE:  ; ========== $BF013
+  $BF013: 05 50 4C 41           CALLF $414C50H
+  $BF017: 59                    ??? $59
+  $BF018: 58                    ??? $58
+  $BF019: 7C 00                 DEC A
+  $BF01B: 00                    NOP
+
+PLAYX_CMD_ADDR:  ; ========== $BF01C
+  $BF01C: 7C 22                 DEC BA
+  $BF01E: F0 8B 00              MV [?$8B]
+  $BF021: 00                    NOP
+
+PLAYX_INIT:  ; ========== $BF022
+  $BF022: 2F                    PUSHU IMR
+  $BF023: 30                    PRE $30  [(n)/(BP+n)]
+  $BF024: CC FB A0              MV (FBH)  ;IMR,$A0H
+  $BF027: 30                    PRE $30  [(n)/(BP+n)]
+  $BF028: E8 36 EC              MV [--U],(ECH)  ;BP
+  $BF02B: 30                    PRE $30  [(n)/(BP+n)]
+  $BF02C: CC EC 00              MV (ECH)  ;BP,$00H
+  $BF02F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF030: CC 1F 00              MV (1FH),$00H
+  $BF033: 30                    PRE $30  [(n)/(BP+n)]
+  $BF034: CC 2A 00              MV (2AH),$00H
+  $BF037: 30                    PRE $30  [(n)/(BP+n)]
+  $BF038: CC 35 00              MV (35H)  ;VOFS3,$00H
+  $BF03B: 30                    PRE $30  [(n)/(BP+n)]
+  $BF03C: CC 1B 00              MV (1BH)  ;VCODE1,$00H
+  $BF03F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF040: DC 23 C1 F2 0B        MVP (23H)  ;VOFS1,[$BF2C1H]
+  $BF045: 30                    PRE $30  [(n)/(BP+n)]
+  $BF046: DC 2E B1 F2 0B        MVP (2EH)  ;VOFS2,[$BF2B1H]
+  $BF04B: 30                    PRE $30  [(n)/(BP+n)]
+  $BF04C: DC 39 A1 F2 0B        MVP (39H)  ;VOFS3,[$BF2A1H]
+  $BF051: 08 00                 MV A,$00H
+  $BF053: A8 C1 F2 0B           MV [$BF2C1H],A
+  $BF057: A8 B1 F2 0B           MV [$BF2B1H],A
+  $BF05B: A8 A1 F2 0B           MV [$BF2A1H],A
+  $BF05F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF060: 61 16 03              CMP (16H)  ;NPART,$03H
+  $BF063: 1C 04                 JRC +4  ;→$BF069H
+  $BF065: 30                    PRE $30  [(n)/(BP+n)]
+  $BF066: CC 16 01              MV (16H)  ;NPART,$01H
+  $BF069: 30                    PRE $30  [(n)/(BP+n)]
+  $BF06A: 61 1E 0A              CMP (1EH)  ;DLEN1,$0AH
+  $BF06D: 1C 0C                 JRC +12  ;→$BF07BH
+  $BF06F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF070: CC 1E 05              MV (1EH)  ;DLEN1,$05H
+  $BF073: 30                    PRE $30  [(n)/(BP+n)]
+  $BF074: CC 29 05              MV (29H)  ;DLEN2,$05H
+  $BF077: 30                    PRE $30  [(n)/(BP+n)]
+  $BF078: CC 34 05              MV (34H)  ;DLEN3,$05H
+  $BF07B: 30                    PRE $30  [(n)/(BP+n)]
+  $BF07C: 61 26 05              CMP (26H)  ;OCT1,$05H
+  $BF07F: 1C 0C                 JRC +12  ;→$BF08DH
+  $BF081: 30                    PRE $30  [(n)/(BP+n)]
+  $BF082: CC 26 02              MV (26H)  ;OCT1,$02H
+  $BF085: 30                    PRE $30  [(n)/(BP+n)]
+  $BF086: CC 31 02              MV (31H)  ;OCT2,$02H
+  $BF089: 30                    PRE $30  [(n)/(BP+n)]
+  $BF08A: CC 3C 02              MV (3CH)  ;OCT3,$02H
+
+FIND_PARTS:  ; ========== $BF08D
+  $BF08D: 30                    PRE $30  [(n)/(BP+n)]
+  $BF08E: CC EC 1C              MV (ECH)  ;BP,$1CH
+  $BF091: 09 03                 MV IL,$03H
+  $BF093: 90 04                 MV A,[X]
+  $BF095: 60 0D                 CMP A,$0DH
+  $BF097: 18 2D                 JRZ +45  ;→$BF0C6H
+  $BF099: 60 3A                 CMP A,$3AH
+  $BF09B: 18 08                 JRZ +8  ;→$BF0A5H
+  $BF09D: A4 04                 MV (04H),X
+  $BF09F: CC 00 00              MV (00H),$00H
+  $BF0A2: CC 03 01              MV (03H),$01H
+  $BF0A5: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0A6: 41 EC 0B              ADD (ECH)  ;BP,$0BH
+  $BF0A9: 04 B4 F0              CALL $F0B4H
+  $BF0AC: 1C 18                 JRC +24  ;→$BF0C6H
+  $BF0AE: 7C 01                 DEC IL
+  $BF0B0: 1B 1F                 JRNZ -31  ;→$BF093H
+  $BF0B2: 12 12                 JR +18  ;→$BF0C6H
+  $BF0B4: 90 04                 MV A,[X]
+  $BF0B6: 6C 04                 INC X
+  $BF0B8: 60 0D                 CMP A,$0DH
+  $BF0BA: 97                    SC
+  $BF0BB: 1A 01                 JRNZ +1  ;→$BF0BEH
+  $BF0BD: 06                    RET
+  $BF0BE: 60 3A                 CMP A,$3AH
+  $BF0C0: 9F                    RC
+  $BF0C1: 1A 01                 JRNZ +1  ;→$BF0C4H
+  $BF0C3: 06                    RET
+  $BF0C4: 13 12                 JR -18  ;→$BF0B4H
+  $BF0C6: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0C7: 61 1B 00              CMP (1BH)  ;VCODE1,$00H
+  $BF0CA: 15 6C F2              JPNZ $F26CH
+  $BF0CD: 04 D2 F0              CALL $F0D2H
+  $BF0D0: 13 0C                 JR -12  ;→$BF0C6H
+  $BF0D2: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0D3: CC 1B 01              MV (1BH)  ;VCODE1,$01H
+  $BF0D6: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0D7: CC EC 1C              MV (ECH)  ;BP,$1CH
+  $BF0DA: 09 03                 MV IL,$03H
+  $BF0DC: 61 03 00              CMP (03H),$00H
+  $BF0DF: 18 0C                 JRZ +12  ;→$BF0EDH
+  $BF0E1: 61 00 00              CMP (00H),$00H
+  $BF0E4: 1A 03                 JRNZ +3  ;→$BF0E9H
+  $BF0E6: 04 5F F1              CALL $F15FH
+  $BF0E9: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0EA: CC 1B 00              MV (1BH)  ;VCODE1,$00H
+  $BF0ED: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0EE: 41 EC 0B              ADD (ECH)  ;BP,$0BH
+  $BF0F1: 7C 01                 DEC IL
+  $BF0F3: 1B 19                 JRNZ -25  ;→$BF0DCH
+  $BF0F5: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0F6: CC 13 FF              MV (13H)  ;PITCH1,$FFH
+  $BF0F9: 30                    PRE $30  [(n)/(BP+n)]
+  $BF0FA: CC EC 1C              MV (ECH)  ;BP,$1CH
+  $BF0FD: 09 03                 MV IL,$03H
+  $BF0FF: 61 03 00              CMP (03H),$00H
+  $BF102: 18 0A                 JRZ +10  ;→$BF10EH
+  $BF104: 22                    PRE $22  [(BP+n)/(n)]
+  $BF105: B7 00                 MV [A],S
+  $BF107: 13 1E                 JR -30  ;→$BF0EBH
+  $BF109: 04 30 C8              CALL $C830H
+  $BF10C: 13 00                 JR -0  ;→$BF10EH
+  $BF10E: 30                    PRE $30  [(n)/(BP+n)]
+  $BF10F: 41 EC 0B              ADD (ECH)  ;BP,$0BH
+  $BF112: 7C 01                 DEC IL
+  $BF114: 1B 17                 JRNZ -23  ;→$BF0FFH
+  $BF116: 30                    PRE $30  [(n)/(BP+n)]
+  $BF117: 6D 13                 INC (13H)  ;PITCH1
+  $BF119: 1A 01                 JRNZ +1  ;→$BF11CH
+  $BF11B: 06                    RET
+  $BF11C: 30                    PRE $30  [(n)/(BP+n)]
+  $BF11D: 7D 13                 DEC (13H)  ;PITCH1
+  $BF11F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF120: CC EC 1C              MV (ECH)  ;BP,$1CH
+  $BF123: 09 03                 MV IL,$03H
+  $BF125: 80 00                 MV A,(00H)
+  $BF127: 30                    PRE $30  [(n)/(BP+n)]
+  $BF128: 4A 13                 SUB A,(13H)  ;PITCH1
+  $BF12A: 1C 02                 JRC +2  ;→$BF12EH
+  $BF12C: A0 00                 MV (00H),A
+  $BF12E: 30                    PRE $30  [(n)/(BP+n)]
+  $BF12F: 41 EC 0B              ADD (ECH)  ;BP,$0BH
+  $BF132: 7C 01                 DEC IL
+  $BF134: 1B 11                 JRNZ -17  ;→$BF125H
+  $BF136: 0C 00 00 00           MV X,$00000H
+  $BF13A: 30                    PRE $30  [(n)/(BP+n)]
+  $BF13B: CC 14 00              MV (14H)  ;PITCH2,$00H
+  $BF13E: 9F                    RC
+  $BF13F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF140: F7 13                 SHL (13H)  ;PITCH1
+  $BF142: 30                    PRE $30  [(n)/(BP+n)]
+  $BF143: F7 14                 SHL (14H)  ;PITCH2
+  $BF145: 9F                    RC
+  $BF146: 30                    PRE $30  [(n)/(BP+n)]
+  $BF147: F7 13                 SHL (13H)  ;PITCH1
+  $BF149: 30                    PRE $30  [(n)/(BP+n)]
+  $BF14A: F7 14                 SHL (14H)  ;PITCH2
+  $BF14C: 30                    PRE $30  [(n)/(BP+n)]
+  $BF14D: 82 13                 MV BA,(13H)  ;PITCH1
+  $BF14F: 30                    PRE $30  [(n)/(BP+n)]
+  $BF150: 81 17                 MV IL,(17H)  ;TEMPO
+  $BF152: 45 42                 ADD X,BA
+  $BF154: 7C 01                 DEC IL
+  $BF156: 1B 06                 JRNZ -6  ;→$BF152H
+  $BF158: 30                    PRE $30  [(n)/(BP+n)]
+  $BF159: A4 18                 MV (18H)  ;LFLAG,X
+  $BF15B: 04 72 F2              CALL $F272H
+  $BF15E: 06                    RET
+
+MML_DISPATCH:  ; ========== $BF15F
+  $BF15F: 2B                    PUSHU I
+  $BF160: 84 04                 MV X,(04H)
+  $BF162: 30                    PRE $30  [(n)/(BP+n)]
+  $BF163: CC 15 00              MV (15H)  ;PITCH3,$00H
+  $BF166: 90 04                 MV A,[X]
+  $BF168: 60 0D                 CMP A,$0DH
+  $BF16A: 18 38                 JRZ +56  ;→$BF1A4H
+  $BF16C: 60 3A                 CMP A,$3AH
+  $BF16E: 18 34                 JRZ +52  ;→$BF1A4H
+  $BF170: 60 2B                 CMP A,$2BH
+  $BF172: 18 57                 JRZ +87  ;→$BF1CBH
+  $BF174: 60 2D                 CMP A,$2DH
+  $BF176: 18 5B                 JRZ +91  ;→$BF1D3H
+  $BF178: 60 3C                 CMP A,$3CH
+  $BF17A: 18 43                 JRZ +67  ;→$BF1BFH
+  $BF17C: 60 3E                 CMP A,$3EH
+  $BF17E: 18 45                 JRZ +69  ;→$BF1C5H
+  $BF180: 60 4F                 CMP A,$4FH
+  $BF182: 18 2B                 JRZ +43  ;→$BF1AFH
+  $BF184: 60 54                 CMP A,$54H
+  $BF186: 18 53                 JRZ +83  ;→$BF1DBH
+  $BF188: 60 23                 CMP A,$23H
+  $BF18A: 0D CA F2 0B           MV Y,$BF2CAH
+  $BF18E: 1A 06                 JRNZ +6  ;→$BF196H
+  $BF190: 0D FA F2 0B           MV Y,$BF2FAH
+  $BF194: 6C 04                 INC X
+  $BF196: 04 F4 F1              CALL $F1F4H
+  $BF199: 1D 35                 JRC -53  ;→$BF166H
+  $BF19B: A0 00                 MV (00H),A
+  $BF19D: A4 04                 MV (04H),X
+  $BF19F: 04 5F F2              CALL $F25FH
+  $BF1A2: 3B                    POPU I
+  $BF1A3: 06                    RET
+  $BF1A4: 85 07                 MV Y,(07H)
+  $BF1A6: 08 00                 MV A,$00H
+  $BF1A8: B0 05                 MV [Y],A
+  $BF1AA: CC 03 00              MV (03H),$00H
+  $BF1AD: 13 0D                 JR -13  ;→$BF1A2H
+  $BF1AF: 6C 04                 INC X
+  $BF1B1: 90 04                 MV A,[X]
+  $BF1B3: 48 30                 SUB A,$30H
+  $BF1B5: 60 05                 CMP A,$05H
+  $BF1B7: 1F 53                 JRNC -83  ;→$BF166H
+  $BF1B9: A0 0A                 MV (0AH),A
+  $BF1BB: 6C 04                 INC X
+  $BF1BD: 13 59                 JR -89  ;→$BF166H
+  $BF1BF: 6D 0A                 INC (0AH)
+  $BF1C1: 6C 04                 INC X
+  $BF1C3: 13 5F                 JR -95  ;→$BF166H
+  $BF1C5: 7D 0A                 DEC (0AH)
+  $BF1C7: 6C 04                 INC X
+  $BF1C9: 13 65                 JR -101  ;→$BF166H
+  $BF1CB: 30                    PRE $30  [(n)/(BP+n)]
+  $BF1CC: CC 15 01              MV (15H)  ;PITCH3,$01H
+  $BF1CF: 6C 04                 INC X
+  $BF1D1: 13 6D                 JR -109  ;→$BF166H
+  $BF1D3: 30                    PRE $30  [(n)/(BP+n)]
+  $BF1D4: CC 15 FF              MV (15H)  ;PITCH3,$FFH
+  $BF1D7: 6C 04                 INC X
+  $BF1D9: 13 75                 JR -117  ;→$BF166H
+  $BF1DB: 6C 04                 INC X
+  $BF1DD: 90 04                 MV A,[X]
+  $BF1DF: 48 31                 SUB A,$31H
+  $BF1E1: 1D 7D                 JRC -125  ;→$BF166H
+  $BF1E3: 60 02                 CMP A,$02H
+  $BF1E5: 1F 81                 JRNC -129  ;→$BF166H
+  $BF1E7: 68 FF                 XOR A,$FFH
+  $BF1E9: 6C 00                 INC A
+  $BF1EB: 40 02                 ADD A,$02H
+  $BF1ED: 30                    PRE $30  [(n)/(BP+n)]
+  $BF1EE: A0 16                 MV (16H)  ;NPART,A
+  $BF1F0: 6C 04                 INC X
+  $BF1F2: 13 8E                 JR -142  ;→$BF166H
+
+PITCH_CALC:  ; ========== $BF1F4
+  $BF1F4: 09 08                 MV IL,$08H
+  $BF1F6: 90 04                 MV A,[X]
+  $BF1F8: 30                    PRE $30  [(n)/(BP+n)]
+  $BF1F9: E0 05 13              MV (13H)  ;PITCH1,[Y]
+  $BF1FC: 6C 05                 INC Y
+  $BF1FE: 30                    PRE $30  [(n)/(BP+n)]
+  $BF1FF: 63 13                 CMP (13H)  ;PITCH1,A
+  $BF201: 18 12                 JRZ +18  ;→$BF215H
+  $BF203: 6C 05                 INC Y
+  $BF205: 6C 05                 INC Y
+  $BF207: 6C 05                 INC Y
+  $BF209: 6C 05                 INC Y
+  $BF20B: 6C 05                 INC Y
+  $BF20D: 7C 01                 DEC IL
+  $BF20F: 1B 19                 JRNZ -25  ;→$BF1F8H
+  $BF211: 97                    SC
+  $BF212: 6C 04                 INC X
+  $BF214: 06                    RET
+  $BF215: 80 0A                 MV A,(0AH)
+  $BF217: 30                    PRE $30  [(n)/(BP+n)]
+  $BF218: 42 15                 ADD A,(15H)  ;PITCH3
+  $BF21A: 60 05                 CMP A,$05H
+  $BF21C: 1C 02                 JRC +2  ;→$BF220H
+  $BF21E: 08 04                 MV A,$04H
+  $BF220: 45 50                 ADD Y,A
+  $BF222: 30                    PRE $30  [(n)/(BP+n)]
+  $BF223: E0 05 13              MV (13H)  ;PITCH1,[Y]
+  $BF226: 22                    PRE $22  [(BP+n)/(n)]
+  $BF227: C8 01 13              MV (01H),(13H)  ;PITCH1
+  $BF22A: 6C 04                 INC X
+  $BF22C: 90 04                 MV A,[X]
+  $BF22E: 60 55                 CMP A,$55H
+  $BF230: 1A 04                 JRNZ +4  ;→$BF236H
+  $BF232: 08 0A                 MV A,$0AH
+  $BF234: 12 0C                 JR +12  ;→$BF242H
+  $BF236: 48 30                 SUB A,$30H
+  $BF238: 1C 04                 JRC +4  ;→$BF23EH
+  $BF23A: 60 0A                 CMP A,$0AH
+  $BF23C: 1C 04                 JRC +4  ;→$BF242H
+  $BF23E: 80 02                 MV A,(02H)
+  $BF240: 12 02                 JR +2  ;→$BF244H
+  $BF242: 6C 04                 INC X
+  $BF244: A0 02                 MV (02H),A
+  $BF246: 0D 2A F3 0B           MV Y,$BF32AH
+  $BF24A: 45 50                 ADD Y,A
+  $BF24C: 30                    PRE $30  [(n)/(BP+n)]
+  $BF24D: E0 05 13              MV (13H)  ;PITCH1,[Y]
+  $BF250: 30                    PRE $30  [(n)/(BP+n)]
+  $BF251: 81 16                 MV IL,(16H)  ;NPART
+  $BF253: 08 00                 MV A,$00H
+  $BF255: 30                    PRE $30  [(n)/(BP+n)]
+  $BF256: 42 13                 ADD A,(13H)  ;PITCH1
+  $BF258: 7C 01                 DEC IL
+  $BF25A: 1B 07                 JRNZ -7  ;→$BF255H
+  $BF25C: 60 00                 CMP A,$00H
+  $BF25E: 06                    RET
+  $BF25F: 85 07                 MV Y,(07H)
+  $BF261: 80 01                 MV A,(01H)
+  $BF263: 60 00                 CMP A,$00H
+  $BF265: 18 02                 JRZ +2  ;→$BF269H
+  $BF267: 08 10                 MV A,$10H
+  $BF269: B0 05                 MV [Y],A
+  $BF26B: 06                    RET
+
+EXIT:  ; ========== $BF26C
+  $BF26C: 30                    PRE $30  [(n)/(BP+n)]
+  $BF26D: E0 26 EC              MV (ECH)  ;BP,[U++]
+  $BF270: 3F                    POPU IMR
+  $BF271: 07                    RETF
+
+VOICE_ROUTE:  ; ========== $BF272
+  $BF272: 30                    PRE $30  [(n)/(BP+n)]
+  $BF273: D8 BD F2 0B 1D        MV [$BF2BDH],(1DH)  ;VREG1
+  $BF278: 32                    PRE $32  [(n)/(n)]
+  $BF279: C8 14 1D              MV (14H)  ;PITCH2,(1DH)  ;VREG1
+  $BF27C: 30                    PRE $30  [(n)/(BP+n)]
+  $BF27D: D8 AD F2 0B 28        MV [$BF2ADH],(28H)  ;VREG2
+  $BF282: 32                    PRE $32  [(n)/(n)]
+  $BF283: C8 15 28              MV (15H)  ;PITCH3,(28H)  ;VREG2
+  $BF286: 30                    PRE $30  [(n)/(BP+n)]
+  $BF287: D8 9D F2 0B 33        MV [$BF29DH],(33H)  ;VREG3
+  $BF28C: 32                    PRE $32  [(n)/(n)]
+  $BF28D: C8 13 33              MV (13H)  ;PITCH1,(33H)  ;VREG3
+
+SOUND_GEN:  ; ========== $BF290
+  $BF290: 08 EF                 MV A,$EFH
+  $BF292: 30                    PRE $30  [(n)/(BP+n)]
+  $BF293: 84 18                 MV X,(18H)  ;LFLAG
+  $BF295: 30                    PRE $30  [(n)/(BP+n)]
+  $BF296: 7D 13                 DEC (13H)  ;PITCH1
+  $BF298: 1A 08                 JRNZ +8  ;→$BF2A2H
+  $BF29A: 30                    PRE $30  [(n)/(BP+n)]
+  $BF29B: CC 13 00              MV (13H)  ;PITCH1,$00H
+  $BF29E: 30                    PRE $30  [(n)/(BP+n)]
+  $BF29F: 79 FD 10              OR (FDH),$10H
+  $BF2A2: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2A3: 73 FD                 AND (FDH),A
+  $BF2A5: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2A6: 7D 15                 DEC (15H)  ;PITCH3
+  $BF2A8: 1A 08                 JRNZ +8  ;→$BF2B2H
+  $BF2AA: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2AB: CC 15 00              MV (15H)  ;PITCH3,$00H
+  $BF2AE: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2AF: 79 FD 10              OR (FDH),$10H
+  $BF2B2: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2B3: 73 FD                 AND (FDH),A
+  $BF2B5: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2B6: 7D 14                 DEC (14H)  ;PITCH2
+  $BF2B8: 1A 08                 JRNZ +8  ;→$BF2C2H
+  $BF2BA: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2BB: CC 14 00              MV (14H)  ;PITCH2,$00H
+  $BF2BE: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2BF: 79 FD 10              OR (FDH),$10H
+  $BF2C2: 30                    PRE $30  [(n)/(BP+n)]
+  $BF2C3: 73 FD                 AND (FDH),A
+  $BF2C5: 7C 04                 DEC X
+  $BF2C7: 1B 34                 JRNZ -52  ;→$BF295H
+  $BF2C9: 06                    RET
+
+PITCH_TABLE:  ; ========== $BF2CA
+  $BF2CA: 43 FF                 DB  $43H,$FFH
+  $BF2CC: 89 45 22 11           DB  $89H,$45H,$22H,$11H
+  $BF2D0: 44 F3                 DB  $44H,$F3H
+  $BF2D2: 7A                    DB  $7AH
+  $BF2D3: 3D                    DB  $3DH
+  $BF2D4: 1E 0F                 DB  $1EH,$0FH
+  $BF2D6: 45 D9                 DB  $45H,$D9H
+  $BF2D8: 6D 37                 DB  $6DH,$37H
+  $BF2DA: 1B 0D                 DB  $1BH,$0DH
+  $BF2DC: 46 CD                 DB  $46H,$CDH
+  $BF2DE: 67 33                 DB  $67H,$33H
+  $BF2E0: 1A 0C                 DB  $1AH,$0CH
+  $BF2E2: 47 B7 5C              DB  $47H,$B7H,$5CH
+  $BF2E5: 2E                    DB  $2EH
+  $BF2E6: 17 0B 41              DB  $17H,$0BH,$41H
+  $BF2E9: A3 52                 DB  $A3H,$52H
+  $BF2EB: 29                    DB  $29H
+  $BF2EC: 14 0A 42              DB  $14H,$0AH,$42H
+  $BF2EF: 91 49                 DB  $91H,$49H
+  $BF2F1: 24                    DB  $24H
+  $BF2F2: 12 09                 DB  $12H,$09H
+  $BF2F4: 52                    DB  $52H
+  $BF2F5: 00                    DB  $00H
+  $BF2F6: 00                    DB  $00H
+  $BF2F7: 00                    DB  $00H
+  $BF2F8: 00                    DB  $00H
+  $BF2F9: 00                    DB  $00H
+  $BF2FA: 43 FF                 DB  $43H,$FFH
+  $BF2FC: 82 41                 DB  $82H,$41H
+  $BF2FE: 20                    DB  $20H
+  $BF2FF: 10                    DB  $10H
+  $BF300: 44 E7                 DB  $44H,$E7H
+  $BF302: 73 3A                 DB  $73H,$3AH
+  $BF304: 1C 0E                 DB  $1CH,$0EH
+  $BF306: 45 CD                 DB  $45H,$CDH
+  $BF308: 67 33                 DB  $67H,$33H
+  $BF30A: 1A 0C                 DB  $1AH,$0CH
+  $BF30C: 46 C1                 DB  $46H,$C1H
+  $BF30E: 61 31 18              DB  $61H,$31H,$18H
+  $BF311: 0C 47 AD 57           DB  $0CH,$47H,$ADH,$57H
+  $BF315: 2B                    DB  $2BH
+  $BF316: 15 0A 41              DB  $15H,$0AH,$41H
+  $BF319: 99 4D                 DB  $99H,$4DH
+  $BF31B: 27                    DB  $27H
+  $BF31C: 13 09                 DB  $13H,$09H
+  $BF31E: 42 89                 DB  $42H,$89H
+  $BF320: 45 22                 DB  $45H,$22H
+  $BF322: 11                    DB  $11H
+  $BF323: 08 52                 DB  $08H,$52H
+  $BF325: 00                    DB  $00H
+  $BF326: 00                    DB  $00H
+  $BF327: 00                    DB  $00H
+  $BF328: 00                    DB  $00H
+  $BF329: 00                    DB  $00H
+
+DURLEN_TABLE:  ; ========== $BF32A
+  $BF32A: 03 06 09 0C           DB  $03H,$06H,$09H,$0CH
+  $BF32E: 12 18                 DB  $12H,$18H
+  $BF330: 24                    DB  $24H
+  $BF331: 30                    DB  $30H
+  $BF332: 48 60                 DB  $48H,$60H
+  $BF334: 04 08 80              DB  $04H,$08H,$80H
+  $BF337: 00                    DB  $00H
