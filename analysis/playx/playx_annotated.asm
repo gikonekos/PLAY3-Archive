@@ -127,6 +127,7 @@ PLAYX_INIT:  ; $BF022
   $BF086: CC 31 02            MV (OCT2),$02H
   $BF089: 30                  PRE $30
   $BF08A: CC 3C 02            MV (OCT3),$02H
+
 ; ----- Part start detection FIND_PARTS ($BF08D-$BF15E) -------
 
 FIND_PARTS:  ; $BF08D
@@ -314,6 +315,7 @@ PITCH_LOOKUP:  ; $BF196
   $BF1A8: B0 05               MV [Y],A          ; Speaker = 0 (silence)
   $BF1AA: CC 03 00            MV (03H),$00H     ; Clear voice-active flag
   $BF1AD: 13 0D               JR -13            ; -> $BF1A2H
+
   ; 'O' command: explicit octave setting O1-O5
   $BF1AF: 6C 04               INC X
   $BF1B1: 90 04               MV A,[X]
@@ -404,7 +406,7 @@ SEARCH_LOOP:  ; $BF1F6
   ; Parse note length (digit or omitted/default)
   $BF22A: 6C 04               INC X             ; Next character
   $BF22C: 90 04               MV A,[X]
-  $BF22E: 60 55               CMP A,$55H        ; 'U' (dotted note?) 
+  $BF22E: 60 55               CMP A,$55H        ; 'U' (dotted note?)
   $BF230: 1A 04               JRNZ +4           ; -> $BF236H
   $BF232: 08 0A               MV A,$0AH         ; Dotted = 10
   $BF234: 12 0C               JR +12            ; -> $BF242H
