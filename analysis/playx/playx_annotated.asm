@@ -1,4 +1,5 @@
-; PLAYX disassembly (SC62015) reconstructed from original PLAYX.BIN
+; PLAYX disassembly (SC62015)
+; Source: PLAYX.BIN (SHARP PC-E500)
 ; =============================================================
 ; PLAYX — Complete SC62015 Disassembly (Final)
 ; Load address: $BF000, Size: 824 bytes ($BF000-$BF337)
