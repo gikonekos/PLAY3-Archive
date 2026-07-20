@@ -1,4 +1,3 @@
-\
 # DRUMTEST
 
 DRUMTEST is a demonstration program for the **PLAY3 driver** on the SHARP PC-E500 series pocket computers.
