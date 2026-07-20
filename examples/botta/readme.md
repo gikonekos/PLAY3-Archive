@@ -12,6 +12,7 @@ The program is written for the **PLAY2L buzzer music routine** for the
 
 - `BOTTA.BAS` – original BASIC music program OLD version
 - `BOTTA2.BAS` – original BASIC music program
+- `BOTTAPL3.KRA` – original BASIC music program Version with karaoke subtitles
 
 ---
 
