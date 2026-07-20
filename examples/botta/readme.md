@@ -71,6 +71,52 @@ The original Japanese title is:
 
 ---
 
+## BOTTAPL3.KRA Lyrics.
+
+The final version includes lyrics.
+
+The content of those lyrics.
+
+*Japanese*
+
+```
+金儲け
+銭儲け
+今日もお店は
+大繁盛
+いらっしゃい（晴れでも）
+いらっしゃい（雨でも）
+安いよ！
+（だけどホントは
+よそより三割
+水増しマシマシマシマシ
+ボロボロボロ儲け～）
+ナイショ！
+```
+
+*English translation.*
+
+```
+Making money,
+Cashing in—
+Business is booming
+Again today!
+
+Welcome in,
+Rain or shine—
+It’s a bargain!
+
+(But the truth is...
+Our prices are
+Thirty percent higher
+Than everyone else's—
+Making a killing,
+Raking in the cash!)
+
+Keep it under your hat!
+```
+---
+
 ## Repository context
 
 This file is included in the PLAY3 Archive as **related historical material**
