@@ -20,6 +20,24 @@ This repository preserves both:
 ---
 
 
+## Quick Start
+
+| Goal | Go here |
+|------|---------|
+| **Hear it on real hardware / video** | [YouTube demo](https://youtu.be/pbo1Mc-6PrA) · [Full playlist](https://youtube.com/playlist?list=PL0MMNZ2b8g1aup5tHZkTpCn9zczGLA3Rw) |
+| **Example music programs** | [`examples/`](examples/) (Dash!, VEZAR, Bottakuri Shouten, SAMPLE, …) |
+| **Driver binaries / sources** | [`drivers/`](drivers/) (PLAY / PLAY2 / PLAY3 / PLAYX) |
+| **Reconstructed assembly** | [`reconstruction/`](reconstruction/) |
+| **Technical analysis** | [`analysis/`](analysis/) · [`docs/`](docs/) |
+
+**Related archives**
+
+- [Space Panicco Archive](https://github.com/gikonekos/Space-Panicco-Archive) — PC-98 game that uses *Bottakuri Shouten* (from this PLAY3 set) as BGM
+- [Building Rescue Archive](https://github.com/gikonekos/Building-Rescue-Archive) — PC-E500 action game from the same era / author circle
+
+---
+
+
 # Repository Structure
 
 | Path | Description |
