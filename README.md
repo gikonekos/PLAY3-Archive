@@ -1,6 +1,3 @@
-A reconstruction and preservation project of the **PLAY3** buzzer music driver
-originally published in **Pocket Computer Journal (1993)**.
-
 # PLAY3 Archive
 
 **3-voice music from a single 1-bit buzzer on the SHARP PC-E500 (1993).**
@@ -21,6 +18,19 @@ This repository preserves both:
 - a **verified reconstructed assembly build**
 
 ---
+
+
+# Repository Structure
+
+| Path | Description |
+|------|-------------|
+| `drivers/` | Original and reconstructed driver binaries / sources (PLAY, PLAY2, PLAY3, PLAYX) |
+| `examples/` | Example music programs (Dash!, VEZAR, Bottakuri Shouten, SAMPLE, etc.) |
+| `reconstruction/` | Reconstructed assembler sources and build artifacts |
+| `analysis/` | Algorithm, binary comparison, memory map, and timing analysis |
+| `docs/` | Technical manuals, scanned magazine pages, and reference material |
+| `work/` | Working notes, intermediate versions, and verification reports |
+| `verified-test.txt` | Verification notes |
 
 # Overview
 
@@ -250,5 +260,4 @@ https://github.com/gikonekos/Building-Rescue-Archive
 
 **Space Panicco Archive**  
 https://github.com/gikonekos/Space-Panicco-Archive
-
 
